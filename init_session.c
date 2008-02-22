@@ -15,8 +15,7 @@
  *
  * Returns a random non-privileged port, range 1025..65536
  */
-static inline unsigned short
-get_random_port (void)
+static inline unsigned short get_random_port (void)
 {
         unsigned char  byte;
         unsigned short port;
@@ -33,8 +32,7 @@ get_random_port (void)
 }
 
 
-void
-init_session (int cmd_sk)
+void init_session (int cmd_sk)
 {
         unsigned short     port;
         int                err, i, sk;

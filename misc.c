@@ -13,8 +13,7 @@
  *
  * Show 'msg' followed by the system error and exit badly.
  */
-void
-fatal (char *msg)
+void fatal (char *msg)
 {
         fputs("FATAL ERROR: ", stderr);
         perror(msg);
@@ -30,8 +29,7 @@ fatal (char *msg)
  * place it in a small loop to wait until all 'msg' contents, at least, gets
  * copied onto the internal TCP/IP stack buffers.
  */
-void
-send_reply (int sk, char *msg)
+void send_reply (int sk, char *msg)
 {
         int msglen, b;
 
@@ -64,8 +62,7 @@ send_reply (int sk, char *msg)
  * from left to right, in contrast with the original. Therefore, here, negative
  * numbers are directly converted to 0.
  */
-long long
-str_to_ll (char *str)
+long long str_to_ll (char *str)
 {
         long long value = 0;
 
@@ -95,8 +92,7 @@ str_to_ll (char *str)
  * which parses the path looking for any of the substrings "./" or "../" at the
  * beginning, "/./" or "/../" within, or else "/." or "/.." at the end.
  */
-int
-path_is_secure (char *path)
+int path_is_secure (char *path)
 {
         /*
          *       Current state ____      ____ Input value
@@ -134,8 +130,7 @@ path_is_secure (char *path)
  * to the stderr. Useful to follow the progress of the command-reply exchange
  * without the need of a debugger.
  */
-void
-debug_msg (const char *format, ...)
+void debug_msg (const char *format, ...)
 {
         va_list params;
 

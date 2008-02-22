@@ -17,8 +17,7 @@
 
 #include "uftps.h"
 
-void
-send_file (void)
+void send_file (void)
 {
         int                fd, err;
         struct sockaddr_in saddr;

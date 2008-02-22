@@ -25,8 +25,7 @@
 #define ERR_BAD_PARAMETER  "501 Invalid PORT parameter.\r\n"
 #define ERR_BAD_CONNECTION "425 Can't open data connection.\r\n"
 
-void
-client_port (void)
+void client_port (void)
 {
         int                commas, err, i;
         unsigned short     port;

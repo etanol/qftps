@@ -28,8 +28,7 @@
 
 #include "uftps.h"
 
-void
-change_dir (void)
+void change_dir (void)
 {
         int err;
 

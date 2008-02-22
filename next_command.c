@@ -13,8 +13,7 @@
 #include "uftps.h"
 #include "command_list.h" /* Command recognizer */
 
-command_t
-next_command (void)
+command_t next_command (void)
 {
         const struct Cmd *cmd;    /* parsed command value */
         int keepon; /* loop exit flag */

@@ -15,8 +15,7 @@
 
 #include "uftps.h"
 
-void
-command_loop (void)
+void command_loop (void)
 {
         while (1) {
                 switch (next_command()) {

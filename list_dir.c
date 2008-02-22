@@ -57,8 +57,7 @@ static char month[12][4] = {
 };
 
 
-void
-list_dir (int full_list)
+void list_dir (int full_list)
 {
         int                err;
         DIR               *dir;

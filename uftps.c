@@ -26,8 +26,7 @@
  *
  * Reaper function. For "zombies".
  */
-static void
-child_finish (int sig)
+static void child_finish (int sig)
 {
         while (waitpid(-1, NULL, WNOHANG) > 0)
                 debug_msg("- Collecting children.\n");
@@ -39,8 +38,7 @@ child_finish (int sig)
  *
  * End. What where you expecting?
  */
-static void
-end (int sig)
+static void end (int sig)
 {
         printf("(%d) Signal caught, exiting...\n", getpid());
         exit(EXIT_SUCCESS);
@@ -48,8 +46,7 @@ end (int sig)
 
 
 /***   MAIN   ***/
-int
-main (int argc, char **argv)
+int main (int argc, char **argv)
 {
         int                bind_sk, cmd_sk, err, yes = 1;
         unsigned short     port = 0;

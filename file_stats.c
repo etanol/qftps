@@ -12,8 +12,7 @@
 
 #include "uftps.h"
 
-void
-file_stats (int type)
+void file_stats (int type)
 {
         int         err;
         struct stat st;
