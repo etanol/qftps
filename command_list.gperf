@@ -1,0 +1,52 @@
+%language=ANSI-C
+%7bit
+%compare-lengths
+%readonly-tables
+%includes
+
+%define hash-function-name   command_hash
+%define lookup-function-name command_lookup
+
+%struct-type
+%define slot-name cmd
+struct Cmd { const char *cmd; command_t value; };
+
+%%
+ABOR,       FTP_ABOR
+ACCT,       FTP_ACCT
+ALLO,       FTP_ALLO
+APPE,       FTP_APPE
+CDUP,       FTP_CDUP
+CWD,        FTP_CWD
+DELE,       FTP_DELE
+FEAT,       FTP_FEAT
+HELP,       FTP_HELP
+LIST,       FTP_LIST
+MDTM,       FTP_MDTM
+MKD,        FTP_MKD
+MODE,       FTP_MODE
+NLST,       FTP_NLST
+NOOP,       FTP_NOOP
+OPTS,       FTP_OPTS
+PASS,       FTP_PASS
+PASV,       FTP_PASV
+PORT,       FTP_PORT
+PWD,        FTP_PWD
+QUIT,       FTP_QUIT
+REIN,       FTP_REIN
+REST,       FTP_REST
+RETR,       FTP_RETR
+RMD,        FTP_RMD
+RNFR,       FTP_RNFR
+RNTO,       FTP_RNTO
+SITE,       FTP_SITE
+SIZE,       FTP_SIZE
+SMNT,       FTP_SMNT
+STAT,       FTP_STAT
+STOR,       FTP_STOR
+STOU,       FTP_STOU
+STRU,       FTP_STRU
+SYST,       FTP_SYST
+TYPE,       FTP_TYPE
+USER,       FTP_USER
+%%
