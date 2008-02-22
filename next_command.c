@@ -11,16 +11,16 @@
  */
 
 #include "uftps.h"
-#include "dfa.h" /* Command recognizer */
+#include "command_list.h" /* Command recognizer */
 
 command_t
 next_command (void)
 {
+        const struct Cmd *cmd;    /* parsed command value */
         int keepon; /* loop exit flag */
         int i;      /* processed and saved information index */
         int j;      /* unprocessed and saved information index */
         int b;      /* read bytes from recv() (auxiliary) */
-        int cmd;    /* parsed command value */
 
         /*
          * First of all, try to read a whole line (consuming up to the CRLF
@@ -84,17 +84,19 @@ next_command (void)
 
         debug_msg(">>> %s\n", LineBuf);
 
-        cmd = parse_command(LineBuf);
-
         /* Check if arguments are present and set 'S_arg' pointer as needed */
         for (; LineBuf[i] != ' ' && LineBuf[i] != '\0'; i++)
-                /* ... */;
+                LineBuf[i] = (char) (toupper(LineBuf[i]) & 0x07F);
 
         if (LineBuf[i] != '\0')
                 S_arg = LineBuf + i + 1;
         else
                 S_arg = NULL;
 
-        return (command_t) cmd;
+        cmd = command_lookup(LineBuf, i);
+        if (cmd == NULL)
+            return FTP_NONE;
+
+        return cmd->value;
 }
 

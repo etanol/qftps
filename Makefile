@@ -25,15 +25,15 @@ debug: uftps.dbg
 uftps: $(Objects)
 	@echo ' Linking           $@' && $(CC) $(LDFLAGS) -o $@ $^
 
-uftps.dbg: $(Sources) $(Header) dfa.h
+uftps.dbg: $(Sources) $(Header) command_list.h
 	@echo ' Building  [debug] $@' && \
 	$(CC) -Wall -pipe -O0 -g -pg -DDEBUG -o $@ $(filter %.c, $^)
 
 # Special dependencies and rules
-next_command.o: next_command.c dfa.h
+next_command.o: next_command.c command_list.h
 
-dfa.h: gendfa.pl
-	@echo ' Generating        $@' && ./gendfa.pl >$@
+command_list.h: command_list.gperf
+	@echo ' Generating        $@' && gperf --output-file=$@ $<
 
 # Pattern rules
 %.o: %.c $(Header)

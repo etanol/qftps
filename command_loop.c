@@ -18,9 +18,7 @@
 void
 command_loop (void)
 {
-        int quit = 0;
-
-        while (!quit) {
+        while (1) {
                 switch (next_command()) {
 
                 /*
@@ -100,7 +98,7 @@ command_loop (void)
                         send_reply(S_cmd_sk, "221 Goodbye.\r\n");
                         close(S_cmd_sk);
                         close(S_passive_bind_sk);
-                        quit = 1;
+                        exit(EXIT_SUCCESS);
                         break;
 
                 case FTP_PASV:
