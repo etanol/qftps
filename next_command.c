@@ -1,10 +1,24 @@
 /*
- * User FTP Server
- * Author : C2H5OH
- * License: GPL v2
+ * User FTP Server,  Share folders over FTP without being root.
+ * Copyright (C) 2008  Isaac Jurado
  *
- * next_command.c - Return the next command (as an integer) available in the
- *                  control channel.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+/*
+ * Return the next command (as an integer) available in the control channel.
  *
  * Most of this implementation has been inspired by str_netfd_alloc() from
  * netstr.c of VsFTPd.
@@ -24,11 +38,11 @@ command_t next_command (void)
         /*
          * First of all, try to read a whole line (consuming up to the CRLF
          * sequence), doing a peek; that is, reading from the socket buffer
-         * without really consuming. There is a hard limit of LINE_SIZE up to
+         * without really consuming.  There is a hard limit of LINE_SIZE up to
          * the LF character.
          *
          * If a LF character is found before reaching the end of the read chunk,
-         * only that line will be retired from the socket buffer. Otherwise,
+         * only that line will be retired from the socket buffer.  Otherwise,
          * consume everything to let more network data to come.
          *
          * The management scheme of the 'Line' buffer is as follows:

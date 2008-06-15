@@ -1,9 +1,24 @@
 /*
- * User FTP Server
- * Author : C2H5OH
- * License: GPL v2
+ * User FTP Server,  Share folders over FTP without being root.
+ * Copyright (C) 2008  Isaac Jurado
  *
- * misc.c - Miscellaneous helper functions.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+/*
+ * Miscellaneous helper functions.
  */
 
 #include "uftps.h"
@@ -24,7 +39,7 @@ void fatal (char *msg)
 /*
  * send_reply
  *
- * Send 'msg' through socket 'sk'. Because a single send() call doesn't ensure
+ * Send 'msg' through socket 'sk'.  Because a single send() call doesn't ensure
  * that all data is transferred (or maybe the call is interrupted), we need to
  * place it in a small loop to wait until all 'msg' contents, at least, gets
  * copied onto the internal TCP/IP stack buffers.
@@ -51,15 +66,15 @@ void send_reply (int sk, char *msg)
 /*
  * str_to_ll
  *
- * Converts a string to its numeric value in 64 bit representation. Quote from
+ * Converts a string to its numeric value in 64 bit representation.  Quote from
  * sysutil.c file of VsFTPd:
  *
  *   ``atoll() is C99 standard - but even modern FreeBSD, OpenBSD don't
  *     haveit, so we'll supply our own''
  *
  * This function is almost a literal copy of vsf_sysutil_a_to_filesize_t(),
- * present in that file. The only difference is that the string is processed
- * from left to right, in contrast with the original. Therefore, here, negative
+ * present in that file.  The only difference is that the string is processed
+ * from left to right, in contrast with the original.  Therefore, here, negative
  * numbers are directly converted to 0.
  */
 long long str_to_ll (char *str)
@@ -85,7 +100,7 @@ long long str_to_ll (char *str)
 /*
  * path_is_secure
  *
- * Check if 'path' is trying to access beyond the Basedir. We shouldn't allow
+ * Check if 'path' is trying to access beyond the Basedir.  We shouldn't allow
  * that because we try to emulate chroot().
  *
  * This implementation is basically a small DFA (Deterministic Finite Automata)
@@ -126,9 +141,9 @@ int path_is_secure (char *path)
 /*
  * debug_msg
  *
- * Only implemented when debug flags are enabled. Display an information message
- * to the stderr. Useful to follow the progress of the command-reply exchange
- * without the need of a debugger.
+ * Only implemented when debug flags are enabled.  Display an information
+ * message to the stderr.  Useful to follow the progress of the command-reply
+ * exchange without the need of a debugger.
  */
 void debug_msg (const char *format, ...)
 {

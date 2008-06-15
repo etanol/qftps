@@ -1,16 +1,31 @@
 /*
- * User FTP Server
- * Author : C2H5OH
- * License: GPL v2
+ * User FTP Server,  Share folders over FTP without being root.
+ * Copyright (C) 2008  Isaac Jurado
  *
- * send_file.c - RETR command implementation. It uses sendfile() because seems
- *               quite optimal, just as VsFTPd does.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
  *
- * Same restrictions, as in change_dir.c, apply for the argument. See that file
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+/*
+ * RETR command implementation.  It uses sendfile() because seems quite optimal,
+ * just as VsFTPd does.
+ *
+ * Same restrictions, as in change_dir.c, apply for the argument.  See that file
  * for more details.
  *
  * Usually, a client sends a PASV command then immediately connects to the port
- * indicated by the server reply. If we are continuously reusing the same port
+ * indicated by the server reply.  If we are continuously reusing the same port
  * for passive data connections, we have to open whether theres is error or not
  * to shift one position in the connection wait queue.
  */
@@ -48,7 +63,7 @@ void send_file (void)
 
         send_reply(S_cmd_sk, "150 Sending file content.\r\n");
 
-        /* Apply a possible previous REST command. Ignore errors, is it allowd
+        /* Apply a possible previous REST command.  Ignore errors, is it allowd
          * by the RFC? */
         if (S_offset > 0)
                 (void) lseek(fd, (off_t) S_offset, SEEK_SET);

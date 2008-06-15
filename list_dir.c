@@ -1,12 +1,27 @@
 /*
- * User FTP Server
- * Author : C2H5OH
- * License: GPL v2
+ * User FTP Server,  Share folders over FTP without being root.
+ * Copyright (C) 2008  Isaac Jurado
  *
- * list_dir.c - LIST and NLST commands implementation.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+/*
+ * LIST and NLST commands implementation.
  *
  * To make Mozilla Firefox list the directory contents correctly, some research
- * work had to be done. That concluded in:
+ * work had to be done.  That concluded in:
  *
  *     http://cr.yp.to/ftp.html
  *
@@ -15,7 +30,7 @@
  *     http://cr.yp.to/ftp/list/binls.html
  *
  * Only files or subdirectories are shown, the rest of items (symlinks, named
- * pipes, sockets...) are ignored. The following line is sent when a file is
+ * pipes, sockets...) are ignored.  The following line is sent when a file is
  * found:
  *
  * -rw-r--r-- 1 ftp ftp       999 Mon  88 7777 filename
@@ -25,14 +40,14 @@
  * drwxr-xr-x 1 ftp ftp       999 Mon  88 7777 dirname
  *
  * Where '999' is the item size, 'Mon  88 7777' is the month, day and year,
- * respectively, of the last modification date. Some servers display the hour
+ * respectively, of the last modification date.  Some servers display the hour
  * and minute when the distance between current time and last modification time
- * is less than six months. We don't do that as it is considered irrelevant. To
- * obtain a more precise value for the last modification time, let the client
+ * is less than six months.  We don't do that as it is considered irrelevant.
+ * To obtain a more precise value for the last modification time, let the client
  * send a MDTM command.
  *
  * Note that when, for some reason, directory listing is not possible, an empty
- * list is sent. So this error is not detected from the client, until it tries
+ * list is sent.  So this error is not detected from the client, until it tries
  * to execute CWD.
  *
  * Also note that most clients will appreciate listings where all its items are

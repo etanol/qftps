@@ -1,20 +1,33 @@
 /*
- * User FTP Server
- * Author : C2H5OH
- * License: GPL v2
+ * User FTP Server,  Share folders over FTP without being root.
+ * Copyright (C) 2008  Isaac Jurado
  *
- * uftps.c - main
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
  *
- * Main program. Opens the command port until a client requests a connection.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+/*
+ * Main program.  Opens the command port until a client requests a connection.
  * Then the server is forked the child will manage all that client's requests.
  *
  * Attending multiple clients is necessary to allow some clients (like lftp(1))
- * perform multiple concurrent jops. Like moving current transfer to de
+ * perform multiple concurrent jops.  Like moving current transfer to de
  * background and then browse through directories.
  *
- * Also note that here the root directory is fixed. As we can't protect with
+ * Also note that here the root directory is fixed.  As we can't protect with
  * chroot(), due to de lack of privilege, we must do a series of safety checks
- * to simulate that behaviour. Because of this, some strong restrictions have
+ * to simulate that behaviour.  Because of this, some strong restrictions have
  * arised; which could reduce de number of FTP clients compatible with this
  * server.
  */
@@ -24,7 +37,7 @@
 /*
  * clid_finish
  *
- * Reaper function. For "zombies".
+ * Reaper function.  For "zombies".
  */
 static void child_finish (int sig)
 {

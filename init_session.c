@@ -1,9 +1,24 @@
 /*
- * User FTP Server
- * Autor  : C2H5OH
- * License: GPL v2
+ * User FTP Server,  Share folders over FTP without being root.
+ * Copyright (C) 2008  Isaac Jurado
  *
- * init_session.c - Preparing to serve one client.
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+ */
+
+/*
+ * Preparing to serve one client.
  */
 
 #include "uftps.h"
@@ -40,7 +55,7 @@ void init_session (int cmd_sk)
         socklen_t          saddr_len;
         char               address[16];
 
-        /* Get my own IP. As the server is listening to all network interfaces,
+        /* Get my own IP.  As the server is listening to all network interfaces,
          * we won't know the real IP until we are connected to someone */
         saddr_len = (socklen_t) sizeof(saddr);
         err = getsockname(cmd_sk, (struct sockaddr *) &saddr, &saddr_len);
@@ -51,8 +66,8 @@ void init_session (int cmd_sk)
 
         debug_msg("* Local address: %s\n", inet_ntoa(saddr.sin_addr));
 
-        /* Create a data socket to use in passive mode. This socket is cached
-         * and only one of these sockets is created per client. Thus, the
+        /* Create a data socket to use in passive mode.  This socket is cached
+         * and only one of these sockets is created per client.  Thus, the
          * response to PASV is easier (and, maybe, quicker) */
         sk = socket(PF_INET, SOCK_STREAM, 0);
         if (sk == -1) {
