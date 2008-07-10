@@ -26,10 +26,10 @@ debug: uftps.dbg
 # Binaries (release and debug)
 #
 uftps: $(SOURCES:.c=.o)
-	@echo ' Linking           $^' && $(CC) $(LDFLAGS) -o $@ $^
+	@echo ' Linking           $@' && $(CC) $(LDFLAGS) -o $@ $^
 
 uftps.dbg: $(SOURCES:.c=.dbg.o)
-	@echo ' Linking   [debug] $^' && $(CC) $(LDFLAGS_DBG) -o $@ $^
+	@echo ' Linking   [debug] $@' && $(CC) $(LDFLAGS_DBG) -o $@ $^
 
 
 #
@@ -37,13 +37,13 @@ uftps.dbg: $(SOURCES:.c=.dbg.o)
 #
 %.o: %.c
 ifdef ARCH
-	@echo ' Compiling [tuned] $<' && $(CC) $(CFLAGS) $(ARCH) -c -o $@ $<
+	@echo ' Compiling [tuned] $@' && $(CC) $(CFLAGS) $(ARCH) -c -o $@ $<
 else
-	@echo ' Compiling         $<' && $(CC) $(CFLAGS) -c -o $@ $<
+	@echo ' Compiling         $@' && $(CC) $(CFLAGS) -c -o $@ $<
 endif
 
 %.dbg.o: %.c
-	@echo ' Compiling [debug] $<' && $(CC) $(CFLAGS_DBG) -c -o $@ $<
+	@echo ' Compiling [debug] $@' && $(CC) $(CFLAGS_DBG) -c -o $@ $<
 
 .%.d: %.c
 	@echo ' Dependencies      $<' && $(CC) -MM $< \
