@@ -53,6 +53,8 @@
  * Also note that most clients will appreciate listings where all its items are
  * stat()-able.
  */
+
+#include "uftps.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -63,7 +65,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "uftps.h"
 
 /* Month names */
 static char month[12][4] = {

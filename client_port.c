@@ -36,9 +36,16 @@
  */
 
 #include "uftps.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 #define ERR_BAD_PARAMETER  "501 Invalid PORT parameter.\r\n"
 #define ERR_BAD_CONNECTION "425 Can't open data connection.\r\n"
+
 
 void client_port (void)
 {

@@ -26,6 +26,11 @@
  */
 
 #include "uftps.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <stdio.h>
+
 
 void file_stats (int type)
 {

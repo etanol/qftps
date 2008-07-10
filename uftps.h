@@ -20,35 +20,14 @@
 /*
  * Common definitions and some platform independence
  */
-#ifndef __uftps
-#define __uftps
 
 /* Large file support */
 #define _FILE_OFFSET_BITS   64
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
-/* Standard include files */
-#include <sys/types.h>
-#include <sys/sendfile.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/times.h>
-#include <sys/wait.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 /* Debug support */
 #ifdef DEBUG
@@ -119,6 +98,4 @@ expanded_arg (void)
 
         return S_arg;
 }
-
-#endif /* __uftps */
 

@@ -31,6 +31,14 @@
  */
 
 #include "uftps.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/sendfile.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 
 void send_file (void)
 {
@@ -71,7 +79,7 @@ void send_file (void)
         while (S_offset < st.st_size) {
                 debug_msg("* Offset step: %lld\n", S_offset);
 
-                err = sendfile(S_data_sk, fd, &S_offset, INT_MAX);
+                err = sendfile(S_data_sk, fd, (off_t *) &S_offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }

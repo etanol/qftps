@@ -26,6 +26,13 @@
 
 #include "uftps.h"
 #include "command_list.h" /* Command recognizer */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
+
 
 command_t next_command (void)
 {

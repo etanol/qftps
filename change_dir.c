@@ -42,6 +42,8 @@
  */
 
 #include "uftps.h"
+#include <unistd.h>
+
 
 void change_dir (void)
 {
