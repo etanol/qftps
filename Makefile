@@ -39,26 +39,24 @@ uftps.dbg: $(SOURCES:.c=.dbg.o)
 #
 # Pattern rules
 #
-%.o: %.c
+
+%.o: %.c uftps.h
 ifdef ARCH
 	@echo ' Compiling [tuned] $@' && $(CC) $(CFLAGS) $(ARCH) -c -o $@ $<
 else
 	@echo ' Compiling         $@' && $(CC) $(CFLAGS) -c -o $@ $<
 endif
 
-%.dbg.o: %.c
+%.dbg.o: %.c uftps.h
 	@echo ' Compiling [debug] $@' && $(CC) $(CFLAGS_DBG) -c -o $@ $<
-
-.%.d: %.c
-	@echo ' Dependencies      $<' && $(CC) -MM $< \
-	| awk -F: '{printf "$(<:.c=.o) $@:%s\n",$$2; \
-	            printf "$(<:.c=.dbg.o) $@:%s\n",$$2}' >$@
 
 
 #
 # Special rules
 #
-.next_command.d: command_list.h
+
+next_command.o    : command_list.h
+next_command.dbg.o: command_list.h
 
 command_list.h: command_list.gperf
 	@echo ' Generating        $@' && gperf --output-file=$@ $<
@@ -72,17 +70,17 @@ clean:
 	@-rm -fv *.o gmon.out
 
 distclean: clean
-	@-rm -fv .*.d uftps uftps.exe uftps.dbg command_list.h
+	@-rm -fv uftps uftps.dbg command_list.h
 
 help:
 	@echo 'User targets:'
 	@echo ''
-	@echo '	all       - Default target. Build the GNU/Linux binary.'
-	@echo '	debug     - Build the GNU/Linux binary with debugging support.'
+	@echo '	all       - Default target.  Build the UFTPS binary.'
+	@echo '	debug     - Build the UFTPS binary with debugging support.'
 	@echo '	clean     - Clean object files.'
-	@echo '	distclean - Clean binaries and DFA header (clean implied).'
+	@echo '	distclean - Clean binaries and the command parser (clean implied).'
 	@echo ''
-	@echo 'NOTE: Enable custom optimization flags for the UNIX binary'
+	@echo 'NOTE: Enable custom optimization flags for the release binary'
 	@echo '      defining the ARCH make variable. For example:'
 	@echo ''
 	@echo '      make "ARCH=-march=pentium-m -mfpmath=sse" all'
