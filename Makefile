@@ -54,10 +54,10 @@ endif
 # Special rules
 #
 
-next_command.o    : command_list.h
-next_command.dbg.o: command_list.h
+next_command.o    : command_parser.h
+next_command.dbg.o: command_parser.h
 
-command_list.h: command_list.gperf
+command_parser.h: command_parser.gperf
 	@echo ' Generating        $@' && gperf --output-file=$@ $<
 
 

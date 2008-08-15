@@ -25,7 +25,7 @@
  * netstr.c of VsFTPd.
  */
 
-#include "command_list.h" /* Command recognizer */
+#include "command_parser.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -113,7 +113,7 @@ enum command next_command (void)
         else
                 Session.arg = NULL;
 
-        cmd = command_lookup(Session.LineBuf, i);
+        cmd = parse_command(Session.LineBuf, i);
         if (cmd == NULL)
             return FTP_NONE;
 

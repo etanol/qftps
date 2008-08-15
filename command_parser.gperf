@@ -5,7 +5,7 @@
 %includes
 
 %define hash-function-name   command_hash
-%define lookup-function-name command_lookup
+%define lookup-function-name parse_command
 
 %struct-type
 %define slot-name cmd
