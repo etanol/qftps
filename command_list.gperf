@@ -9,7 +9,7 @@
 
 %struct-type
 %define slot-name cmd
-struct Cmd { const char *cmd; command_t value; };
+struct Cmd { const char *cmd; enum command value; };
 
 %%
 ABOR,       FTP_ABOR

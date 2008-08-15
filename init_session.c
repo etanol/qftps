@@ -16,12 +16,12 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * Preparing to serve one client.
  */
 
-#include "uftps.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/times.h>
@@ -73,7 +73,7 @@ void init_session (int cmd_sk)
                 fatal("trying to get my own address");
         }
 
-        debug_msg("* Local address: %s\n", inet_ntoa(saddr.sin_addr));
+        debug("Local address: %s\n", inet_ntoa(saddr.sin_addr));
 
         /* Create a data socket to use in passive mode.  This socket is cached
          * and only one of these sockets is created per client.  Thus, the
@@ -99,7 +99,7 @@ void init_session (int cmd_sk)
                 fatal("Could not find any bindable port");
         }
 
-        debug_msg("* Number of bind() tries for PASV port: %d\n", 9 - i);
+        debug("Number of bind() tries for PASV port: %d\n", 9 - i);
 
         err = listen(sk, 1);
         if (err == -1) {
@@ -118,8 +118,8 @@ void init_session (int cmd_sk)
                  "227 Entering Passive Mode (%s,%d,%d).\r\n", address,
                  port >> 8, port & 0x00FF);
 
-        debug_msg("* Passive data port: %d\n",  port);
-        debug_msg("* Passive string reply: %s", S_passive_str);
+        debug("Passive data port: %d\n",  port);
+        debug("Passive string reply: %s", S_passive_str);
 
         /* Set up the rest of the session state variables, except for Basedir
          * which is inherited from uftps.c */

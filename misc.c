@@ -16,30 +16,17 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * Miscellaneous helper functions.
  */
 
-#include "uftps.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-
-/*
- * fatal
- *
- * Show 'msg' followed by the system error and exit badly.
- */
-void fatal (char *msg)
-{
-        fputs("FATAL ERROR: ", stderr);
-        perror(msg);
-        exit(EXIT_FAILURE);
-}
 
 
 /*
@@ -54,7 +41,7 @@ void send_reply (int sk, char *msg)
 {
         int msglen, b;
 
-        debug_msg("<<< %s", msg);
+        debug("Reply '%s'", msg);
 
         msglen = strlen(msg);
         do {
@@ -141,24 +128,4 @@ int path_is_secure (char *path)
         /* Accepting states (safe path) are: */
         return state == 0 || state == 4;
 }
-
-
-#ifdef DEBUG
-/*
- * debug_msg
- *
- * Only implemented when debug flags are enabled.  Display an information
- * message to the stderr.  Useful to follow the progress of the command-reply
- * exchange without the need of a debugger.
- */
-void debug_msg (const char *format, ...)
-{
-        va_list params;
-
-        fprintf(stderr, "(%d) ", getpid());
-        va_start(params, format);
-        vfprintf(stderr, format, params);
-        va_end(params);
-}
-#endif
 

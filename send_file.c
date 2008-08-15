@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * RETR command implementation.  It uses sendfile() because seems quite optimal,
@@ -30,7 +31,6 @@
  * to shift one position in the connection wait queue.
  */
 
-#include "uftps.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
@@ -77,14 +77,14 @@ void send_file (void)
                 (void) lseek(fd, (off_t) S_offset, SEEK_SET);
 
         while (S_offset < st.st_size) {
-                debug_msg("* Offset step: %lld\n", S_offset);
+                debug("Offset step: %lld", S_offset);
 
                 err = sendfile(S_data_sk, fd, (off_t *) &S_offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }
 
-        debug_msg("* Offset end: %lld\n", S_offset);
+        debug("Offset end: %lld", S_offset);
 
         send_reply(S_cmd_sk, "226 File content sent.\r\n");
 

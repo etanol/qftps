@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * Return the next command (as an integer) available in the control channel.
@@ -24,7 +25,6 @@
  * netstr.c of VsFTPd.
  */
 
-#include "uftps.h"
 #include "command_list.h" /* Command recognizer */
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -34,7 +34,7 @@
 #include <ctype.h>
 
 
-command_t next_command (void)
+enum command next_command (void)
 {
         const struct Cmd *cmd;    /* parsed command value */
         int keepon; /* loop exit flag */
@@ -102,7 +102,7 @@ command_t next_command (void)
                 }
         }
 
-        debug_msg(">>> %s\n", LineBuf);
+        debug("Request '%s'", LineBuf);
 
         /* Check if arguments are present and set 'S_arg' pointer as needed */
         for (; LineBuf[i] != ' ' && LineBuf[i] != '\0'; i++)

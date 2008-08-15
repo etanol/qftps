@@ -1,21 +1,24 @@
+#
 # User FTP Server
 #
 # To display this Makefile help use: make help
+#
 
 CC          ?= gcc
 CFLAGS      := -O2 -Wall -pipe -fomit-frame-pointer
-CFLAGS_DBG  := -O0 -Wall -pipe -g -pg
+CFLAGS_DBG  := -O0 -Wall -pipe -g -pg -DDEBUG
 LDFLAGS     := -Wall -pipe -Wl,-s,-O1
 LDFLAGS_DBG := -Wall -pipe -g -pg
 
 SOURCES := change_dir.c client_port.c command_loop.c file_stats.c \
-           init_session.c list_dir.c misc.c next_command.c send_file.c \
+           init_session.c list_dir.c log.c misc.c next_command.c send_file.c \
            session_globals.c uftps.c
 
 
 #
 # Phony targets and aliases
 #
+
 .PHONY: all debug clean distclean help
 
 all  : uftps
@@ -25,6 +28,7 @@ debug: uftps.dbg
 #
 # Binaries (release and debug)
 #
+
 uftps: $(SOURCES:.c=.o)
 	@echo ' Linking           $@' && $(CC) $(LDFLAGS) -o $@ $^
 
@@ -63,6 +67,7 @@ command_list.h: command_list.gperf
 #
 # Cleaning and help
 #
+
 clean:
 	@-rm -fv *.o gmon.out
 

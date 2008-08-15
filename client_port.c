@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * PORT command implementation.
@@ -35,7 +36,6 @@
  * disabled for the next command.
  */
 
-#include "uftps.h"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -54,7 +54,7 @@ void client_port (void)
         char              *str;
         struct sockaddr_in saddr;
 
-        debug_msg("* PORT initial argument: %s\n", S_arg);
+        debug("PORT initial argument: %s\n", S_arg);
 
         str    = S_arg;
         commas = 0;
@@ -88,7 +88,7 @@ void client_port (void)
         port <<= 8;
         port  |= atoi(str + i + 1);
 
-        debug_msg("* PORT parsing results: %s:%d\n", S_arg, port);
+        debug("PORT parsing results: %s:%d\n", S_arg, port);
 
         saddr.sin_family = AF_INET;
         saddr.sin_port   = htons(port);

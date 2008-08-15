@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * Main program.  Opens the command port until a client requests a connection.
@@ -32,7 +33,6 @@
  * server.
  */
 
-#include "uftps.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -52,7 +52,7 @@
 static void child_finish (int sig)
 {
         while (waitpid(-1, NULL, WNOHANG) > 0)
-                debug_msg("- Collecting children.\n");
+                debug("Collecting children.\n");
 }
 
 
@@ -87,8 +87,7 @@ int main (int argc, char **argv)
         if (Basedir == NULL)
                 fatal("Could not retrieve working directory");
         Basedir_len = strlen(Basedir);
-        debug_msg("Working directory is: %s (strlen = %d)\n", Basedir,
-                  Basedir_len);
+        debug("Working directory is: %s (strlen = %d)", Basedir, Basedir_len);
 
         /* Signal handling */
         sigfillset(&my_sa.sa_mask);
@@ -126,9 +125,9 @@ int main (int argc, char **argv)
 
 #if 0
         /* It's nearly impossible, to my knowledge, debug a program that forks.
-         * First try to find the error using the debug_msg() facility. Then, if
-         * you really need to use a debugger, then replace the 0 with a 1 to
-         * compile this code. But remember you won't be able to serve multiple
+         * First try to find the error using the debug() facility. Then, if you
+         * really need to use a debugger, then replace the 0 with a 1 to compile
+         * this code. But remember you won't be able to serve multiple
          * connections */
 
         cmd_sk = accept(bind_sk, (struct sockaddr *) &saddr,

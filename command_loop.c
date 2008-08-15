@@ -16,6 +16,7 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+#include "uftps.h"
 
 /*
  * Main FTP server loop which attends one client.
@@ -28,7 +29,6 @@
  * dedicated dummy messages for some of them but code simplicity is preferred.
  */
 
-#include "uftps.h"
 #include <ctype.h>
 #include <unistd.h>
 #include <stdlib.h>

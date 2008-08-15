@@ -29,12 +29,10 @@
 #include <stddef.h>
 #include <string.h>
 
-/* Debug support */
-#ifdef DEBUG
-extern void debug_msg (const char *format, ...);
-#else
-#define debug_msg(format, ...)
-#endif /* DEBUG */
+#ifndef __GNUC__
+/* Attributes help to catch silly mistakes, but they are not always available */
+#  define __attribute__(x)
+#endif
 
 /* Constants */
 #define DEFAULT_PORT 2211
@@ -42,7 +40,8 @@ extern void debug_msg (const char *format, ...);
 
 /* Recognized commands; please keep it sorted with the same criteria as in
  * gendfa.pl */
-typedef enum _Command {
+enum command
+{
         FTP_NONE = 0,
         FTP_ABOR, FTP_ACCT, FTP_ALLO, FTP_APPE, FTP_CDUP, FTP_CWD,  FTP_DELE,
         FTP_FEAT, FTP_HELP, FTP_LIST, FTP_MDTM, FTP_MKD,  FTP_MODE, FTP_NLST,
@@ -50,7 +49,7 @@ typedef enum _Command {
         FTP_REIN, FTP_REST, FTP_RETR, FTP_RMD,  FTP_RNFR, FTP_RNTO, FTP_SITE,
         FTP_SIZE, FTP_SMNT, FTP_STAT, FTP_STOR, FTP_STOU, FTP_STRU, FTP_SYST,
         FTP_TYPE, FTP_USER
-} command_t;
+};
 
 /* Buffers */
 extern char LineBuf[LINE_SIZE]; /* Incoming command line buffer */
@@ -70,19 +69,35 @@ extern char      S_passive_str[64]; /* Cached reply for PASV */
 extern char     *S_arg;             /* Pointer to comand line argument */
 
 
-/***************************  FUNCTION PROTOTYPES  ***************************/
+/*
+ * Logging functions.  Defined at log.c
+ */
+#ifdef DEBUG
+#  define assert(cond)  if (!(cond)) warning("Assertion '" #cond "' failed")
+   void debug (const char *, ...) __attribute__((format(printf,1,2)));
+#else
+#  define assert(cond)
+   static inline void debug (const char *msg, ...) {}
+#endif
 
-void      init_session   (int cmd_sk);        /* init_session.c */
-command_t next_command   (void);              /* next_command.c */
-void      command_loop   (void);              /* command_loop.c */
-void      change_dir     (void);              /* change_dir.c */
-void      client_port    (void);              /* client_port.c */
-void      send_file      (void);              /* send_file.c */
-void      file_stats     (int type);          /* file_stats.c */
-void      list_dir       (int full_list);     /* list_dir.c */
-void      fatal          (char *msg);         /* misc.c */
-void      send_reply     (int sk, char *msg); /*   |    */
-int       path_is_secure (char *path);        /*  _/    */
+void notice  (const char *, ...) __attribute__((format(printf,1,2)));
+void warning (const char *, ...) __attribute__((format(printf,1,2)));
+void error   (const char *, ...) __attribute__((format(printf,1,2)));
+void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
+
+
+/*****************************  OTHER FUNCTIONS  *****************************/
+
+void         init_session   (int cmd_sk);        /* init_session.c */
+enum command next_command   (void);              /* next_command.c */
+void         command_loop   (void);              /* command_loop.c */
+void         change_dir     (void);              /* change_dir.c */
+void         client_port    (void);              /* client_port.c */
+void         send_file      (void);              /* send_file.c */
+void         file_stats     (int type);          /* file_stats.c */
+void         list_dir       (int full_list);     /* list_dir.c */
+void         send_reply     (int sk, char *msg); /* misc.c */
+int          path_is_secure (char *path);        /*  _/    */
 
 
 /* Inline utility functions */
