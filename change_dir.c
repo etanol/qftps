@@ -49,18 +49,18 @@ void change_dir (void)
 {
         int err;
 
-        if (!path_is_secure(S_arg)) {
-                send_reply(S_cmd_sk, "550 Path is insecure.\r\n");
+        if (!path_is_secure(Session.arg)) {
+                send_reply(Session.cmd_sk, "550 Path is insecure.\r\n");
                 return;
         }
 
         err = chdir(expanded_arg());
 
         if (err == -1) {
-                send_reply(S_cmd_sk, "550 Could not change dir.\r\n");
+                send_reply(Session.cmd_sk, "550 Could not change dir.\r\n");
                 return;
         }
 
-        send_reply(S_cmd_sk, "250 Directory changed.\r\n");
+        send_reply(Session.cmd_sk, "250 Directory changed.\r\n");
 }
 

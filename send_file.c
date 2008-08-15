@@ -47,51 +47,51 @@ void send_file (void)
         struct stat        st;
         socklen_t          slen = sizeof(saddr);
 
-        if (S_passive_mode)
-                S_data_sk = accept(S_passive_bind_sk,
+        if (Session.passive_mode)
+                Session.data_sk = accept(Session.passive_bind_sk,
                                    (struct sockaddr *) &saddr, &slen);
 
-        if (!path_is_secure(S_arg)) {
-                send_reply(S_cmd_sk, "550 Path to file is insecure.\r\n");
+        if (!path_is_secure(Session.arg)) {
+                send_reply(Session.cmd_sk, "550 Path to file is insecure.\r\n");
                 goto finish;
         }
 
         fd = open(expanded_arg(), O_RDONLY, 0);
 
         if (fd == -1) {
-                send_reply(S_cmd_sk, "550 Could not open file.\r\n");
+                send_reply(Session.cmd_sk, "550 Could not open file.\r\n");
                 goto finish;
         }
 
         err = fstat(fd, &st);
         if (err == -1 || !S_ISREG(st.st_mode)) {
-                send_reply(S_cmd_sk, "550 Could not stat file.\r\n");
+                send_reply(Session.cmd_sk, "550 Could not stat file.\r\n");
                 goto finish;
         }
 
-        send_reply(S_cmd_sk, "150 Sending file content.\r\n");
+        send_reply(Session.cmd_sk, "150 Sending file content.\r\n");
 
         /* Apply a possible previous REST command.  Ignore errors, is it allowd
          * by the RFC? */
-        if (S_offset > 0)
-                (void) lseek(fd, (off_t) S_offset, SEEK_SET);
+        if (Session.offset > 0)
+                (void) lseek(fd, (off_t) Session.offset, SEEK_SET);
 
-        while (S_offset < st.st_size) {
-                debug("Offset step: %lld", S_offset);
+        while (Session.offset < st.st_size) {
+                debug("Offset step: %lld", Session.offset);
 
-                err = sendfile(S_data_sk, fd, (off_t *) &S_offset, INT_MAX);
+                err = sendfile(Session.data_sk, fd, (off_t *) &Session.offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }
 
-        debug("Offset end: %lld", S_offset);
+        debug("Offset end: %lld", Session.offset);
 
-        send_reply(S_cmd_sk, "226 File content sent.\r\n");
+        send_reply(Session.cmd_sk, "226 File content sent.\r\n");
 
 finish:
-        close(S_data_sk);
-        S_passive_mode = 0;
-        S_offset       = 0;
-        S_data_sk      = -1;
+        close(Session.data_sk);
+        Session.passive_mode = 0;
+        Session.offset       = 0;
+        Session.data_sk      = -1;
 }
 

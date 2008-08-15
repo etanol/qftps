@@ -26,11 +26,12 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
+#include <sys/types.h>
 #include <stddef.h>
 #include <string.h>
 
-#ifndef __GNUC__
 /* Attributes help to catch silly mistakes, but they are not always available */
+#ifndef __GNUC__
 #  define __attribute__(x)
 #endif
 
@@ -38,8 +39,7 @@
 #define DEFAULT_PORT 2211
 #define LINE_SIZE    4096  /* Same value as PATH_MAX */
 
-/* Recognized commands; please keep it sorted with the same criteria as in
- * gendfa.pl */
+/* Recognized commands */
 enum command
 {
         FTP_NONE = 0,
@@ -51,27 +51,31 @@ enum command
         FTP_TYPE, FTP_USER
 };
 
-/* Buffers */
-extern char LineBuf[LINE_SIZE]; /* Incoming command line buffer */
-extern char AuxBuf[LINE_SIZE];  /* Auxiliary buffer */
+/* Session (client) state */
+struct _SessionScope
+{
 
-/* chroot() emulation */
-extern char *Basedir;
-extern int   Basedir_len;
+        /* Buffers */
+        char   LineBuf[LINE_SIZE]; /* Incoming command line buffer */
+        char   AuxBuf[LINE_SIZE];  /* Auxiliary buffer */
 
-/* Session state information (prefixed by "S_") */
-extern int       S_cmd_sk;          /* Control channel */
-extern int       S_data_sk;         /* Data channel */
-extern int       S_passive_bind_sk; /* Cached data socket for passive mode */
-extern int       S_passive_mode;    /* Passive mode flag */
-extern long long S_offset;          /* Last REST offset accepted */
-extern char      S_passive_str[64]; /* Cached reply for PASV */
-extern char     *S_arg;             /* Pointer to comand line argument */
+        /* chroot() emulation */
+        char  *Basedir;
+        int    Basedir_len;
+
+        /* Other state information */
+        int    cmd_sk;          /* Control channel */
+        int    data_sk;         /* Data channel */
+        int    passive_bind_sk; /* Cached data socket for passive mode */
+        int    passive_mode;    /* Passive mode flag */
+        off_t  offset;          /* Last REST offset accepted */
+        char   passive_str[64]; /* Cached reply for PASV */
+        char  *arg;             /* Pointer to comand line argument */
+};
+
+extern struct _SessionScope Session;
 
 
-/*
- * Logging functions.  Defined at log.c
- */
 #ifdef DEBUG
 #  define assert(cond)  if (!(cond)) warning("Assertion '" #cond "' failed")
    void debug (const char *, ...) __attribute__((format(printf,1,2)));
@@ -86,9 +90,7 @@ void error   (const char *, ...) __attribute__((format(printf,1,2)));
 void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
 
 
-/*****************************  OTHER FUNCTIONS  *****************************/
-
-void         init_session   (int cmd_sk);        /* init_session.c */
+void         init_session   (int cmd_sk);        /* session.c */
 enum command next_command   (void);              /* next_command.c */
 void         command_loop   (void);              /* command_loop.c */
 void         change_dir     (void);              /* change_dir.c */
@@ -104,13 +106,13 @@ int          path_is_secure (char *path);        /*  _/    */
 static inline char *
 expanded_arg (void)
 {
-        if (S_arg != NULL && S_arg[0] == '/') {
-                strncpy(AuxBuf, Basedir, Basedir_len);
-                AuxBuf[Basedir_len] = '\0';
-                strncat(AuxBuf, S_arg, LINE_SIZE - Basedir_len);
-                S_arg = AuxBuf;
+        if (Session.arg != NULL && Session.arg[0] == '/') {
+                strncpy(Session.AuxBuf, Session.Basedir, Session.Basedir_len);
+                Session.AuxBuf[Session.Basedir_len] = '\0';
+                strncat(Session.AuxBuf, Session.arg, LINE_SIZE - Session.Basedir_len);
+                Session.arg = Session.AuxBuf;
         }
 
-        return S_arg;
+        return Session.arg;
 }
 

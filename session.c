@@ -33,6 +33,8 @@
 
 #define ERR_FINISH_MSG "421 Cannot attend you now, sorry.\r\n"
 
+struct _SessionScope  Session;
+
 
 /*
  * get_random_port
@@ -114,20 +116,20 @@ void init_session (int cmd_sk)
                 if (address[i] == '.')
                         address[i] = ',';
         }
-        snprintf(S_passive_str, 64,
+        snprintf(Session.passive_str, 64,
                  "227 Entering Passive Mode (%s,%d,%d).\r\n", address,
                  port >> 8, port & 0x00FF);
 
         debug("Passive data port: %d\n",  port);
-        debug("Passive string reply: %s", S_passive_str);
+        debug("Passive string reply: %s", Session.passive_str);
 
         /* Set up the rest of the session state variables, except for Basedir
          * which is inherited from uftps.c */
-        S_cmd_sk          = cmd_sk;
-        S_data_sk         = -1;
-        S_offset          = 0;
-        S_passive_bind_sk = sk;
-        S_passive_mode    = 0;
+        Session.cmd_sk          = cmd_sk;
+        Session.data_sk         = -1;
+        Session.offset          = 0;
+        Session.passive_bind_sk = sk;
+        Session.passive_mode    = 0;
 
         send_reply(cmd_sk, "220 User FTP Server ready.\r\n");
 }

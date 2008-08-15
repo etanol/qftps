@@ -65,7 +65,7 @@ enum command next_command (void)
         i = 0;
         keepon = 1;
         while (keepon) {
-                b = recv(S_cmd_sk, LineBuf + i, LINE_SIZE - i, MSG_PEEK);
+                b = recv(Session.cmd_sk, Session.LineBuf + i, LINE_SIZE - i, MSG_PEEK);
                 if (b == 0) {
                         if (i == LINE_SIZE)
                                 printf("(%d) * Overflow attempt, exiting.\n",
@@ -73,12 +73,12 @@ enum command next_command (void)
                         else
                                 printf("(%d) * Close request without QUIT command, exiting.\n",
                                         getpid());
-                        close(S_cmd_sk);
+                        close(Session.cmd_sk);
                         exit(EXIT_FAILURE);
                 }
 
                 /* Locate LF character, j will point to it */
-                for (j = i; j < (b + i) && LineBuf[j] != '\n'; j++)
+                for (j = i; j < (b + i) && Session.LineBuf[j] != '\n'; j++)
                         /* ... */;
 
                 /* Check limits */
@@ -87,33 +87,33 @@ enum command next_command (void)
                         i += b;
                         j  = b;
                         do {
-                                b  = recv(S_cmd_sk, AuxBuf, j, 0);
+                                b  = recv(Session.cmd_sk, Session.AuxBuf, j, 0);
                                 j -= b;
                         } while (j > 0);
                 } else {
                         /* LF found, consume only that line and get out */
-                        LineBuf[j-1] = '\0';
+                        Session.LineBuf[j-1] = '\0';
                         i = j + 1;
                         do {
-                                b  = recv(S_cmd_sk, AuxBuf, i, 0);
+                                b  = recv(Session.cmd_sk, Session.AuxBuf, i, 0);
                                 i -= b;
                         } while (i > 0);
                         keepon = 0;
                 }
         }
 
-        debug("Request '%s'", LineBuf);
+        debug("Request '%s'", Session.LineBuf);
 
-        /* Check if arguments are present and set 'S_arg' pointer as needed */
-        for (; LineBuf[i] != ' ' && LineBuf[i] != '\0'; i++)
-                LineBuf[i] = (char) (toupper(LineBuf[i]) & 0x07F);
+        /* Check if arguments are present and set 'Session.arg' pointer as needed */
+        for (; Session.LineBuf[i] != ' ' && Session.LineBuf[i] != '\0'; i++)
+                Session.LineBuf[i] = (char) (toupper(Session.LineBuf[i]) & 0x07F);
 
-        if (LineBuf[i] != '\0')
-                S_arg = LineBuf + i + 1;
+        if (Session.LineBuf[i] != '\0')
+                Session.arg = Session.LineBuf + i + 1;
         else
-                S_arg = NULL;
+                Session.arg = NULL;
 
-        cmd = command_lookup(LineBuf, i);
+        cmd = command_lookup(Session.LineBuf, i);
         if (cmd == NULL)
             return FTP_NONE;
 

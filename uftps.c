@@ -83,11 +83,11 @@ int main (int argc, char **argv)
                 port = (unsigned short) atoi(argv[1]);
 
         /* Fixate root directory */
-        Basedir = getcwd(NULL, 0);
-        if (Basedir == NULL)
+        Session.Basedir = getcwd(NULL, 0);
+        if (Session.Basedir == NULL)
                 fatal("Could not retrieve working directory");
-        Basedir_len = strlen(Basedir);
-        debug("Working directory is: %s (strlen = %d)", Basedir, Basedir_len);
+        Session.Basedir_len = strlen(Session.Basedir);
+        debug("Working directory is: %s (strlen = %d)", Session.Basedir, Session.Basedir_len);
 
         /* Signal handling */
         sigfillset(&my_sa.sa_mask);

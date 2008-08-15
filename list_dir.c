@@ -83,13 +83,13 @@ void list_dir (int full_list)
         struct tm          t;
         socklen_t          saddr_len = sizeof(saddr);
 
-        if (S_passive_mode)
-                S_data_sk = accept(S_passive_bind_sk,
+        if (Session.passive_mode)
+                Session.data_sk = accept(Session.passive_bind_sk,
                                    (struct sockaddr *) &saddr, &saddr_len);
 
-        if (S_arg != NULL && path_is_secure(S_arg)) {
+        if (Session.arg != NULL && path_is_secure(Session.arg)) {
                 /* Workaround for Konqueror and Nautilus */
-                if (S_arg[0] == '-')
+                if (Session.arg[0] == '-')
                         dir = opendir(".");
                 else
                         dir = opendir(expanded_arg());
@@ -97,7 +97,7 @@ void list_dir (int full_list)
                 dir = opendir(".");
         }
 
-        send_reply(S_cmd_sk, "150 Sending directory list.\r\n");
+        send_reply(Session.cmd_sk, "150 Sending directory list.\r\n");
         if (dir == NULL)
                 goto finish;
 
@@ -117,7 +117,7 @@ void list_dir (int full_list)
                 if (full_list) {
                         /* LIST */
                         gmtime_r(&(st.st_mtime), &t);
-                        snprintf(AuxBuf, LINE_SIZE,
+                        snprintf(Session.AuxBuf, LINE_SIZE,
                                  "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
                                  (S_ISDIR(st.st_mode) ? "dr-xr-xr-x"
                                   : "-r--r--r--"), (long long) st.st_size,
@@ -125,20 +125,20 @@ void list_dir (int full_list)
                                  dentry->d_name);
                 } else {
                         /* NLST */
-                        snprintf(AuxBuf, LINE_SIZE, "%s%s", dentry->d_name,
+                        snprintf(Session.AuxBuf, LINE_SIZE, "%s%s", dentry->d_name,
                                  (dentry->d_type == DT_DIR ? "/\r\n"
                                   : "\r\n"));
                 }
 
-                send_reply(S_data_sk, AuxBuf);
+                send_reply(Session.data_sk, Session.AuxBuf);
 
         } while (1);
         closedir(dir);
 
 finish:
-        send_reply(S_cmd_sk, "226 Directory list sent.\r\n");
-        close(S_data_sk);
-        S_data_sk      = -1;
-        S_passive_mode = 0;
+        send_reply(Session.cmd_sk, "226 Directory list sent.\r\n");
+        close(Session.data_sk);
+        Session.data_sk      = -1;
+        Session.passive_mode = 0;
 }
 

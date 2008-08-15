@@ -54,14 +54,14 @@ void client_port (void)
         char              *str;
         struct sockaddr_in saddr;
 
-        debug("PORT initial argument: %s\n", S_arg);
+        debug("PORT initial argument: %s\n", Session.arg);
 
-        str    = S_arg;
+        str    = Session.arg;
         commas = 0;
         while (commas < 4) {
                 switch (*str) {
                 case '\0':
-                        send_reply(S_cmd_sk, ERR_BAD_PARAMETER);
+                        send_reply(Session.cmd_sk, ERR_BAD_PARAMETER);
                         return;
                 case ',':
                         commas++;
@@ -74,9 +74,9 @@ void client_port (void)
         str[-1] = '\0'; /* *--str++ = '\0'; */
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
-        err = !inet_aton(S_arg, &(saddr.sin_addr));
+        err = !inet_aton(Session.arg, &(saddr.sin_addr));
         if (err) {
-                send_reply(S_cmd_sk, ERR_BAD_PARAMETER);
+                send_reply(Session.cmd_sk, ERR_BAD_PARAMETER);
                 return;
         }
 
@@ -88,26 +88,26 @@ void client_port (void)
         port <<= 8;
         port  |= atoi(str + i + 1);
 
-        debug("PORT parsing results: %s:%d\n", S_arg, port);
+        debug("PORT parsing results: %s:%d\n", Session.arg, port);
 
         saddr.sin_family = AF_INET;
         saddr.sin_port   = htons(port);
 
-        S_data_sk = socket(PF_INET, SOCK_STREAM, 0);
-        if (S_data_sk == -1) {
-                send_reply(S_cmd_sk, ERR_BAD_CONNECTION);
+        Session.data_sk = socket(PF_INET, SOCK_STREAM, 0);
+        if (Session.data_sk == -1) {
+                send_reply(Session.cmd_sk, ERR_BAD_CONNECTION);
                 return;
         }
 
-        err = connect(S_data_sk, (struct sockaddr *) &saddr, sizeof(saddr));
+        err = connect(Session.data_sk, (struct sockaddr *) &saddr, sizeof(saddr));
         if (err == -1) {
-                send_reply(S_cmd_sk, ERR_BAD_CONNECTION);
-                close(S_data_sk);
-                S_data_sk = -1;
+                send_reply(Session.cmd_sk, ERR_BAD_CONNECTION);
+                close(Session.data_sk);
+                Session.data_sk = -1;
                 return;
         }
 
-        S_passive_mode = 0;
-        send_reply(S_cmd_sk, "200 PORT Command OK.\r\n");
+        Session.passive_mode = 0;
+        send_reply(Session.cmd_sk, "200 PORT Command OK.\r\n");
 }
 
