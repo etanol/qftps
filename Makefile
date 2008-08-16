@@ -10,8 +10,8 @@ CFLAGS_DBG  := -O0 -Wall -pipe -g -pg -DDEBUG
 LDFLAGS     := -Wall -pipe -Wl,-s,-O1
 LDFLAGS_DBG := -Wall -pipe -g -pg
 
-SOURCES := change_dir.c client_port.c command_loop.c file_stats.c list_dir.c \
-           log.c misc.c next_command.c send_file.c session.c uftps.c
+SOURCES := client_port.c command_loop.c file_stats.c list_dir.c log.c misc.c \
+           next_command.c path.c send_file.c session.c uftps.c
 
 
 #

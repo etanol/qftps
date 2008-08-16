@@ -82,13 +82,6 @@ int main (int argc, char **argv)
         if (argc > 1)
                 port = (unsigned short) atoi(argv[1]);
 
-        /* Fixate root directory */
-        Session.Basedir = getcwd(NULL, 0);
-        if (Session.Basedir == NULL)
-                fatal("Could not retrieve working directory");
-        Session.Basedir_len = strlen(Session.Basedir);
-        debug("Working directory is: %s (strlen = %d)", Session.Basedir, Session.Basedir_len);
-
         /* Signal handling */
         sigfillset(&my_sa.sa_mask);
         my_sa.sa_flags   = SA_RESTART;
@@ -123,7 +116,6 @@ int main (int argc, char **argv)
                "\t%s <port>\n\n"
                "Where port must be between 1025 and 65535.\n", argv[0]);
 
-#if 0
         /* It's nearly impossible, to my knowledge, debug a program that forks.
          * First try to find the error using the debug() facility. Then, if you
          * really need to use a debugger, then replace the 0 with a 1 to compile
@@ -138,7 +130,6 @@ int main (int argc, char **argv)
         init_session(cmd_sk);
         command_loop();
         return EXIT_SUCCESS;
-#endif
 
         /* Main loop (accepting connections) */
         while (1) {

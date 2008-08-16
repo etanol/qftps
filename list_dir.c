@@ -75,62 +75,66 @@ static char month[12][4] = {
 
 void list_dir (int full_list)
 {
-        int                err;
+        int                len, err;
         DIR               *dir;
         struct dirent     *dentry;
         struct sockaddr_in saddr;
         struct stat        st;
         struct tm          t;
         socklen_t          saddr_len = sizeof(saddr);
+        char               item[512];
 
         if (Session.passive_mode)
                 Session.data_sk = accept(Session.passive_bind_sk,
                                    (struct sockaddr *) &saddr, &saddr_len);
 
-        if (Session.arg != NULL && path_is_secure(Session.arg)) {
-                /* Workaround for Konqueror and Nautilus */
-                if (Session.arg[0] == '-')
-                        dir = opendir(".");
-                else
-                        dir = opendir(expanded_arg());
-        } else {
-                dir = opendir(".");
+        /* Workaround for Konqueror and Nautilus */
+        if (Session.arg != NULL && Session.arg[0] == '-')
+                Session.arg = NULL;
+
+        len = expand_arg();
+        dir = opendir(Session.arg);
+        if (len > 3)
+        {
+                Session.arg[len - 1] = '/';
+                len++;
         }
 
         send_reply(Session.cmd_sk, "150 Sending directory list.\r\n");
         if (dir == NULL)
                 goto finish;
 
-        /* Skip "." and "..", under Linux they are always the first two */
-        readdir(dir);
-        readdir(dir);
-
         do {
                 dentry = readdir(dir);
                 if (dentry == NULL)
                         break;
 
-                err = stat(dentry->d_name, &st);
+                strcpy(&Session.arg[len - 1], dentry->d_name);
+                debug("Stating '%s'", Session.arg);
+                err = stat(Session.arg, &st);
                 if (err == -1)
                         continue;
 
-                if (full_list) {
+                if (full_list)
+                {
                         /* LIST */
                         gmtime_r(&(st.st_mtime), &t);
-                        snprintf(Session.AuxBuf, LINE_SIZE,
+                        snprintf(item, 512,
                                  "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
                                  (S_ISDIR(st.st_mode) ? "dr-xr-xr-x"
                                   : "-r--r--r--"), (long long) st.st_size,
                                  month[t.tm_mon], t.tm_mday, t.tm_year + 1900,
                                  dentry->d_name);
-                } else {
+                }
+                else
+                {
                         /* NLST */
-                        snprintf(Session.AuxBuf, LINE_SIZE, "%s%s", dentry->d_name,
+                        snprintf(item, 512, "%s%s", dentry->d_name,
                                  (dentry->d_type == DT_DIR ? "/\r\n"
                                   : "\r\n"));
                 }
 
-                send_reply(Session.data_sk, Session.AuxBuf);
+                send_reply(Session.data_sk, item);
 
         } while (1);
         closedir(dir);

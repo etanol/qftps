@@ -126,17 +126,8 @@ void command_loop (void)
                         break;
 
                 case FTP_PWD:
-                        getcwd(Session.AuxBuf, LINE_SIZE);
-                        /* Root directory santy check */
-                        if (Session.AuxBuf[Session.Basedir_len] == '\0') {
-                                Session.AuxBuf[Session.Basedir_len] = '/';
-                                Session.AuxBuf[Session.Basedir_len + 1] = '\0';
-                        }
-                        /* We can overwrite the line buffer as no useful
-                         * argument will be present */
-                        snprintf(Session.LineBuf, LINE_SIZE, "257 \"%s\"\r\n",
-                                 Session.AuxBuf + Session.Basedir_len);
-                        send_reply(Session.cmd_sk, Session.LineBuf);
+                        snprintf(Session.AuxBuf, LINE_SIZE, "257 \"%s\"\r\n", &Session.cwd[1]);
+                        send_reply(Session.cmd_sk, Session.AuxBuf);
                         break;
 
                 case FTP_REST:

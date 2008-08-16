@@ -38,12 +38,8 @@ void file_stats (int type)
         struct stat st;
         struct tm   t;
 
-        if (!path_is_secure(Session.arg)) {
-                send_reply(Session.cmd_sk, "550 Path is insecure.\r\n");
-                return;
-        }
-
-        err = stat(expanded_arg(), &st);
+        expand_arg();
+        err = stat(Session.arg, &st);
 
         if (err == -1) {
                 send_reply(Session.cmd_sk, "550 Could not stat file.\r\n");

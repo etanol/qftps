@@ -130,6 +130,10 @@ void init_session (int cmd_sk)
         Session.offset          = 0;
         Session.passive_bind_sk = sk;
         Session.passive_mode    = 0;
+        Session.cwd[0]          = '.';
+        Session.cwd[1]          = '/';
+        Session.cwd[2]          = '\0';
+        Session.cwd_len         = 3;
 
         send_reply(cmd_sk, "220 User FTP Server ready.\r\n");
 }

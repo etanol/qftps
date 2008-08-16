@@ -27,8 +27,6 @@
 #define _LARGEFILE64_SOURCE
 
 #include <sys/types.h>
-#include <stddef.h>
-#include <string.h>
 
 /* Attributes help to catch silly mistakes, but they are not always available */
 #ifndef __GNUC__
@@ -60,8 +58,8 @@ struct _SessionScope
         char   AuxBuf[LINE_SIZE];  /* Auxiliary buffer */
 
         /* chroot() emulation */
-        char  *Basedir;
-        int    Basedir_len;
+        char   cwd[LINE_SIZE];
+        int    cwd_len;
 
         /* Other state information */
         int    cmd_sk;          /* Control channel */
@@ -93,26 +91,12 @@ void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
 void         init_session   (int cmd_sk);        /* session.c */
 enum command next_command   (void);              /* next_command.c */
 void         command_loop   (void);              /* command_loop.c */
-void         change_dir     (void);              /* change_dir.c */
 void         client_port    (void);              /* client_port.c */
 void         send_file      (void);              /* send_file.c */
 void         file_stats     (int type);          /* file_stats.c */
 void         list_dir       (int full_list);     /* list_dir.c */
+void         change_dir     (void);              /* path.c */
+int          expand_arg     (void);              /*  _/    */
 void         send_reply     (int sk, char *msg); /* misc.c */
 int          path_is_secure (char *path);        /*  _/    */
-
-
-/* Inline utility functions */
-static inline char *
-expanded_arg (void)
-{
-        if (Session.arg != NULL && Session.arg[0] == '/') {
-                strncpy(Session.AuxBuf, Session.Basedir, Session.Basedir_len);
-                Session.AuxBuf[Session.Basedir_len] = '\0';
-                strncat(Session.AuxBuf, Session.arg, LINE_SIZE - Session.Basedir_len);
-                Session.arg = Session.AuxBuf;
-        }
-
-        return Session.arg;
-}
 

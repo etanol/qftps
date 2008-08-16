@@ -51,12 +51,14 @@ void send_file (void)
                 Session.data_sk = accept(Session.passive_bind_sk,
                                    (struct sockaddr *) &saddr, &slen);
 
-        if (!path_is_secure(Session.arg)) {
-                send_reply(Session.cmd_sk, "550 Path to file is insecure.\r\n");
+        if (Session.arg == NULL)
+        {
+                send_reply(Session.cmd_sk, "501 Argument required.\r\n");
                 goto finish;
         }
 
-        fd = open(expanded_arg(), O_RDONLY, 0);
+        expand_arg();
+        fd = open(Session.arg, O_RDONLY, 0);
 
         if (fd == -1) {
                 send_reply(Session.cmd_sk, "550 Could not open file.\r\n");
