@@ -42,16 +42,16 @@ enum command next_command (void)
         read_request();
 
         i = 0;
-        while (Session.input[i] != ' ' && Session.input[i] != '\0')
+        while (SS.input[i] != ' ' && SS.input[i] != '\0')
         {
-                Session.input[i] = toupper(Session.input[i] & 0x07F);
+                SS.input[i] = toupper(SS.input[i] & 0x07F);
                 i++;
         }
 
-        Session.arg      = (Session.input[i] == ' ' ? Session.input + i + 1 : NULL);
-        Session.input[i] = '\0';
+        SS.arg      = (SS.input[i] == ' ' ? SS.input + i + 1 : NULL);
+        SS.input[i] = '\0';
 
-        cmd = parse_command(Session.input, i);
+        cmd = parse_command(SS.input, i);
         if (cmd == NULL)
                 return FTP_NONE;
         return cmd->value;

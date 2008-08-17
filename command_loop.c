@@ -84,21 +84,21 @@ void command_loop (void)
                  * A bit more complex commands.
                  */
                 case FTP_MODE:
-                        if (toupper(Session.arg[0]) == 'S')
+                        if (toupper(SS.arg[0]) == 'S')
                                 reply_c("200 MODE set to stream.\r\n");
                         else
                                 reply_c("504 Mode not supported.\r\n");
                         break;
 
                 case FTP_STRU:
-                        if (toupper(Session.arg[0]) == 'F')
+                        if (toupper(SS.arg[0]) == 'F')
                                 reply_c("200 STRUcture set to file.\r\n");
                         else
                                 reply_c("504 Structure not supported.\r\n");
                         break;
 
                 case FTP_TYPE:
-                        switch (toupper(Session.arg[0])) {
+                        switch (toupper(SS.arg[0])) {
                         case 'I':
                         case 'A':
                         case 'L':
@@ -111,27 +111,27 @@ void command_loop (void)
 
                 case FTP_QUIT:
                         reply_c("221 Goodbye.\r\n");
-                        close(Session.control_sk);
-                        close(Session.passive_bind_sk);
+                        close(SS.control_sk);
+                        close(SS.passive_bind_sk);
                         exit(EXIT_SUCCESS);
                         break;
 
                 case FTP_PASV:
-                        Session.passive_mode = 1;
-                        reply(Session.passive_str, Session.passive_len);
+                        SS.passive_mode = 1;
+                        reply(SS.passive_str, SS.passive_len);
                         break;
 
                 case FTP_PWD:
-                        l = snprintf(Session.AuxBuf, LINE_SIZE, "257 \"%s\"\r\n", &Session.cwd[1]);
-                        reply(Session.AuxBuf, l);
+                        l = snprintf(SS.AuxBuf, LINE_SIZE, "257 \"%s\"\r\n", &SS.cwd[1]);
+                        reply(SS.AuxBuf, l);
                         break;
 
                 case FTP_REST:
                         /* We don't need str_to_ll() as sscanf() does de job */
-                        sscanf(Session.arg, "%lld", &Session.offset);
-                        l = snprintf(Session.AuxBuf, LINE_SIZE, "350 Got it (%lld).\r\n",
-                                     Session.offset);
-                        reply(Session.AuxBuf, l);
+                        sscanf(SS.arg, "%lld", &SS.offset);
+                        l = snprintf(SS.AuxBuf, LINE_SIZE, "350 Got it (%lld).\r\n",
+                                     SS.offset);
+                        reply(SS.AuxBuf, l);
                         break;
 
                 /*

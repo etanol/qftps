@@ -33,7 +33,7 @@
 
 #define ERR_FINISH_MSG "421 Cannot attend you now, sorry.\r\n"
 
-struct _SessionScope  Session;
+struct _SessionScope  SS;  /* SG --> Session State*/
 
 
 /*
@@ -66,7 +66,7 @@ void init_session (int cmd_sk)
         socklen_t          saddr_len;
         char               address[16];
 
-        Session.control_sk = cmd_sk;
+        SS.control_sk = cmd_sk;
 
         /* Get my own IP.  As the server is listening to all network interfaces,
          * we won't know the real IP until we are connected to someone */
@@ -118,24 +118,24 @@ void init_session (int cmd_sk)
                 if (address[i] == '.')
                         address[i] = ',';
         }
-        Session.passive_len = snprintf(Session.passive_str, 64,
+        SS.passive_len = snprintf(SS.passive_str, 64,
                                        "227 =%s,%d,%d\r\n", address, port >> 8,
                                        port & 0x00FF);
 
         debug("Passive data port: %d\n",  port);
-        debug("Passive string reply: %s", Session.passive_str);
+        debug("Passive string reply: %s", SS.passive_str);
 
         /* Set up the rest of the session state variables, except for Basedir
          * which is inherited from uftps.c */
-        Session.control_sk      = cmd_sk;
-        Session.data_sk         = -1;
-        Session.offset          = 0;
-        Session.passive_bind_sk = sk;
-        Session.passive_mode    = 0;
-        Session.cwd[0]          = '.';
-        Session.cwd[1]          = '/';
-        Session.cwd[2]          = '\0';
-        Session.cwd_len         = 3;
+        SS.control_sk      = cmd_sk;
+        SS.data_sk         = -1;
+        SS.offset          = 0;
+        SS.passive_bind_sk = sk;
+        SS.passive_mode    = 0;
+        SS.cwd[0]          = '.';
+        SS.cwd[1]          = '/';
+        SS.cwd[2]          = '\0';
+        SS.cwd_len         = 3;
 
         reply_c("220 User FTP Server ready.\r\n");
 }

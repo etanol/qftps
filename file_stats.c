@@ -39,7 +39,7 @@ void file_stats (int type)
         struct tm   t;
 
         expand_arg();
-        err = stat(Session.arg, &st);
+        err = stat(SS.arg, &st);
 
         if (err == -1)
         {
@@ -51,16 +51,16 @@ void file_stats (int type)
         {
         case 0: /* MDTM */
                 gmtime_r(&(st.st_mtime), &t);
-                l = snprintf(Session.AuxBuf, LINE_SIZE,
+                l = snprintf(SS.AuxBuf, LINE_SIZE,
                          "213 %4d%02d%02d%02d%02d%02d\r\n", t.tm_year + 1900,
                          t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
                 break;
 
         case 1: /* SIZE */
-                l = snprintf(Session.AuxBuf, LINE_SIZE, "213 %lld\r\n",
+                l = snprintf(SS.AuxBuf, LINE_SIZE, "213 %lld\r\n",
                          (long long) st.st_size);
         }
 
-        reply(Session.AuxBuf, l);
+        reply(SS.AuxBuf, l);
 }
 

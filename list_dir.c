@@ -102,19 +102,19 @@ void list_dir (int full_list)
         socklen_t          saddr_len = sizeof(saddr);
         char               item[512];
 
-        if (Session.passive_mode)
-                Session.data_sk = accept(Session.passive_bind_sk,
+        if (SS.passive_mode)
+                SS.data_sk = accept(SS.passive_bind_sk,
                                    (struct sockaddr *) &saddr, &saddr_len);
 
         /* Workaround for Konqueror and Nautilus */
-        if (Session.arg != NULL && Session.arg[0] == '-')
-                Session.arg = NULL;
+        if (SS.arg != NULL && SS.arg[0] == '-')
+                SS.arg = NULL;
 
         len = expand_arg();
-        dir = opendir(Session.arg);
+        dir = opendir(SS.arg);
         if (len > 3)
         {
-                Session.arg[len - 1] = '/';
+                SS.arg[len - 1] = '/';
                 len++;
         }
 
@@ -127,9 +127,9 @@ void list_dir (int full_list)
                 if (dentry == NULL)
                         break;
 
-                strcpy(&Session.arg[len - 1], dentry->d_name);
-                debug("Stating '%s'", Session.arg);
-                err = stat(Session.arg, &st);
+                strcpy(&SS.arg[len - 1], dentry->d_name);
+                debug("Stating '%s'", SS.arg);
+                err = stat(SS.arg, &st);
                 if (err == -1)
                         continue;
 
@@ -152,15 +152,15 @@ void list_dir (int full_list)
                                       : "\r\n"));
                 }
 
-                send_data(Session.data_sk, item, l);
+                send_data(SS.data_sk, item, l);
 
         } while (1);
         closedir(dir);
 
 finish:
         reply_c("226 Directory list sent.\r\n");
-        close(Session.data_sk);
-        Session.data_sk      = -1;
-        Session.passive_mode = 0;
+        close(SS.data_sk);
+        SS.data_sk      = -1;
+        SS.passive_mode = 0;
 }
 

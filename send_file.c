@@ -47,18 +47,18 @@ void send_file (void)
         struct stat        st;
         socklen_t          slen = sizeof(saddr);
 
-        if (Session.passive_mode)
-                Session.data_sk = accept(Session.passive_bind_sk,
+        if (SS.passive_mode)
+                SS.data_sk = accept(SS.passive_bind_sk,
                                    (struct sockaddr *) &saddr, &slen);
 
-        if (Session.arg == NULL)
+        if (SS.arg == NULL)
         {
                 reply_c("501 Argument required.\r\n");
                 goto finish;
         }
 
         expand_arg();
-        fd = open(Session.arg, O_RDONLY, 0);
+        fd = open(SS.arg, O_RDONLY, 0);
 
         if (fd == -1) {
                 reply_c("550 Could not open file.\r\n");
@@ -75,25 +75,25 @@ void send_file (void)
 
         /* Apply a possible previous REST command.  Ignore errors, is it allowd
          * by the RFC? */
-        if (Session.offset > 0)
-                (void) lseek(fd, (off_t) Session.offset, SEEK_SET);
+        if (SS.offset > 0)
+                (void) lseek(fd, (off_t) SS.offset, SEEK_SET);
 
-        while (Session.offset < st.st_size) {
-                debug("Offset step: %lld", Session.offset);
+        while (SS.offset < st.st_size) {
+                debug("Offset step: %lld", SS.offset);
 
-                err = sendfile(Session.data_sk, fd, (off_t *) &Session.offset, INT_MAX);
+                err = sendfile(SS.data_sk, fd, (off_t *) &SS.offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }
 
-        debug("Offset end: %lld", Session.offset);
+        debug("Offset end: %lld", SS.offset);
 
         reply_c("226 File content sent.\r\n");
 
 finish:
-        close(Session.data_sk);
-        Session.passive_mode = 0;
-        Session.offset       = 0;
-        Session.data_sk      = -1;
+        close(SS.data_sk);
+        SS.passive_mode = 0;
+        SS.offset       = 0;
+        SS.data_sk      = -1;
 }
 

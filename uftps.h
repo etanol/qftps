@@ -74,7 +74,7 @@ struct _SessionScope
         char  *arg;             /* Pointer to comand line argument */
 };
 
-extern struct _SessionScope Session;
+extern struct _SessionScope  SS;  /* SS --> Session State */
 
 
 #ifdef DEBUG

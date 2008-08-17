@@ -103,34 +103,34 @@ void change_dir (void)
 {
         int  len;
 
-        if (Session.arg == NULL)
+        if (SS.arg == NULL)
         {
                 reply_c("501 Argument required.\r\n");
                 return;
         }
 
-        len = apply_path(Session.arg, Session.cwd, Session.cwd_len);
+        len = apply_path(SS.arg, SS.cwd, SS.cwd_len);
         if (len == -1)
         {
                 reply_c("552 Path overflow.\r\n");
                 fatal("Path overflow in CWD");
         }
 
-        Session.cwd_len = len;
+        SS.cwd_len = len;
         reply_c("250 Directory changed.\r\n");
-        debug("Directory changed to '%s'", Session.cwd);
+        debug("Directory changed to '%s'", SS.cwd);
 }
 
 
 int expand_arg (void)
 {
-        int  len = Session.cwd_len;
+        int  len = SS.cwd_len;
 
-        strncpy(Session.AuxBuf, Session.cwd, len);
+        strncpy(SS.AuxBuf, SS.cwd, len);
 
-        if (Session.arg != NULL)
+        if (SS.arg != NULL)
         {
-                len = apply_path(Session.arg, Session.AuxBuf, Session.cwd_len);
+                len = apply_path(SS.arg, SS.AuxBuf, SS.cwd_len);
                 if (len == -1)
                 {
                         reply_c("552 Path overflow.\r\n");
@@ -138,8 +138,8 @@ int expand_arg (void)
                 }
         }
 
-        Session.arg = Session.AuxBuf;
-        debug("Argument expanded to '%s'", Session.arg);
+        SS.arg = SS.AuxBuf;
+        debug("Argument expanded to '%s'", SS.arg);
         return len;
 }
 
