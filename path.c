@@ -70,7 +70,7 @@ static int apply_path (const char *path, char *wd, int len)
                         /* Return to parent directory, found ".." */
                         while (wd[len] != '/')
                                 len--;
-                        if (len == 0)
+                        if (len == 1)
                                 len++;  /* Root reached, fix */
                         wd[len] = '\0';
                         len++;
@@ -105,19 +105,19 @@ void change_dir (void)
 
         if (Session.arg == NULL)
         {
-                send_reply(Session.cmd_sk, "501 Argument required.\r\n");
+                reply_c("501 Argument required.\r\n");
                 return;
         }
 
         len = apply_path(Session.arg, Session.cwd, Session.cwd_len);
         if (len == -1)
         {
-                send_reply(Session.cmd_sk, "552 Path overflow.\r\n");
+                reply_c("552 Path overflow.\r\n");
                 fatal("Path overflow in CWD");
         }
 
         Session.cwd_len = len;
-        send_reply(Session.cmd_sk, "250 Directory changed.\r\n");
+        reply_c("250 Directory changed.\r\n");
         debug("Directory changed to '%s'", Session.cwd);
 }
 
@@ -133,7 +133,7 @@ int expand_arg (void)
                 len = apply_path(Session.arg, Session.AuxBuf, Session.cwd_len);
                 if (len == -1)
                 {
-                        send_reply(Session.cmd_sk, "552 Path overflow.\r\n");
+                        reply_c("552 Path overflow.\r\n");
                         fatal("Path overflow");
                 }
         }

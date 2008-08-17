@@ -73,9 +73,27 @@ static char month[12][4] = {
 };
 
 
+/*
+ * Temporary workaround
+ */
+static void send_data (int sk, const char *str, int len)
+{
+        int  b;
+
+        do {
+                b = write(sk, str, len);
+                if (b <= 0)
+                        return;
+
+                str += b;
+                len -= b;
+        } while (len > 0);
+}
+
+
 void list_dir (int full_list)
 {
-        int                len, err;
+        int                len, l, err;
         DIR               *dir;
         struct dirent     *dentry;
         struct sockaddr_in saddr;
@@ -100,7 +118,7 @@ void list_dir (int full_list)
                 len++;
         }
 
-        send_reply(Session.cmd_sk, "150 Sending directory list.\r\n");
+        reply_c("150 Sending directory list.\r\n");
         if (dir == NULL)
                 goto finish;
 
@@ -119,28 +137,28 @@ void list_dir (int full_list)
                 {
                         /* LIST */
                         gmtime_r(&(st.st_mtime), &t);
-                        snprintf(item, 512,
-                                 "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
-                                 (S_ISDIR(st.st_mode) ? "dr-xr-xr-x"
-                                  : "-r--r--r--"), (long long) st.st_size,
-                                 month[t.tm_mon], t.tm_mday, t.tm_year + 1900,
-                                 dentry->d_name);
+                        l = snprintf(item, 512,
+                                     "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
+                                     (S_ISDIR(st.st_mode) ? "dr-xr-xr-x"
+                                      : "-r--r--r--"), (long long) st.st_size,
+                                     month[t.tm_mon], t.tm_mday, t.tm_year + 1900,
+                                     dentry->d_name);
                 }
                 else
                 {
                         /* NLST */
-                        snprintf(item, 512, "%s%s", dentry->d_name,
-                                 (dentry->d_type == DT_DIR ? "/\r\n"
-                                  : "\r\n"));
+                        l = snprintf(item, 512, "%s%s", dentry->d_name,
+                                     (dentry->d_type == DT_DIR ? "/\r\n"
+                                      : "\r\n"));
                 }
 
-                send_reply(Session.data_sk, item);
+                send_data(Session.data_sk, item, l);
 
         } while (1);
         closedir(dir);
 
 finish:
-        send_reply(Session.cmd_sk, "226 Directory list sent.\r\n");
+        reply_c("226 Directory list sent.\r\n");
         close(Session.data_sk);
         Session.data_sk      = -1;
         Session.passive_mode = 0;

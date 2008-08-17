@@ -34,31 +34,33 @@
 
 void file_stats (int type)
 {
-        int         err;
+        int         l = 0, err;
         struct stat st;
         struct tm   t;
 
         expand_arg();
         err = stat(Session.arg, &st);
 
-        if (err == -1) {
-                send_reply(Session.cmd_sk, "550 Could not stat file.\r\n");
+        if (err == -1)
+        {
+                reply_c("550 Could not stat file.\r\n");
                 return;
         }
 
-        switch (type) {
+        switch (type)
+        {
         case 0: /* MDTM */
                 gmtime_r(&(st.st_mtime), &t);
-                snprintf(Session.AuxBuf, LINE_SIZE,
+                l = snprintf(Session.AuxBuf, LINE_SIZE,
                          "213 %4d%02d%02d%02d%02d%02d\r\n", t.tm_year + 1900,
                          t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
                 break;
 
         case 1: /* SIZE */
-                snprintf(Session.AuxBuf, LINE_SIZE, "213 %lld\r\n",
+                l = snprintf(Session.AuxBuf, LINE_SIZE, "213 %lld\r\n",
                          (long long) st.st_size);
         }
 
-        send_reply(Session.cmd_sk, Session.AuxBuf);
+        reply(Session.AuxBuf, l);
 }
 

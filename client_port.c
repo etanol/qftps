@@ -61,7 +61,7 @@ void client_port (void)
         while (commas < 4) {
                 switch (*str) {
                 case '\0':
-                        send_reply(Session.cmd_sk, ERR_BAD_PARAMETER);
+                        reply_c(ERR_BAD_PARAMETER);
                         return;
                 case ',':
                         commas++;
@@ -76,7 +76,7 @@ void client_port (void)
         /* "h1.h2.h3.h4" ==> struct in_addr */
         err = !inet_aton(Session.arg, &(saddr.sin_addr));
         if (err) {
-                send_reply(Session.cmd_sk, ERR_BAD_PARAMETER);
+                reply_c(ERR_BAD_PARAMETER);
                 return;
         }
 
@@ -95,19 +95,19 @@ void client_port (void)
 
         Session.data_sk = socket(PF_INET, SOCK_STREAM, 0);
         if (Session.data_sk == -1) {
-                send_reply(Session.cmd_sk, ERR_BAD_CONNECTION);
+                reply_c(ERR_BAD_CONNECTION);
                 return;
         }
 
         err = connect(Session.data_sk, (struct sockaddr *) &saddr, sizeof(saddr));
         if (err == -1) {
-                send_reply(Session.cmd_sk, ERR_BAD_CONNECTION);
+                reply_c(ERR_BAD_CONNECTION);
                 close(Session.data_sk);
                 Session.data_sk = -1;
                 return;
         }
 
         Session.passive_mode = 0;
-        send_reply(Session.cmd_sk, "200 PORT Command OK.\r\n");
+        reply_c("200 PORT Command OK.\r\n");
 }
 

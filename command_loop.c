@@ -37,6 +37,8 @@
 
 void command_loop (void)
 {
+        int  l;
+
         while (1) {
                 switch (next_command()) {
 
@@ -44,39 +46,38 @@ void command_loop (void)
                  * Straightforward implementations.
                  */
                 case FTP_NOOP:
-                        send_reply(Session.cmd_sk, "200 I'm alive, don't worry\r\n");
+                        reply_c("200 I'm alive, don't worry\r\n");
                         break;
 
                 case FTP_FEAT:
-                        send_reply(Session.cmd_sk,
-                                   "211-Feature list:\r\n"
-                                   "211- MDTM\r\n"
-                                   "211- REST STREAM\r\n"
-                                   "211- SIZE\r\n"
-                                   "211- TVFS\r\n"
-                                   "211 End.\r\n");
+                        reply_c("211-Feature list:\r\n"
+                                "211- MDTM\r\n"
+                                "211- REST STREAM\r\n"
+                                "211- SIZE\r\n"
+                                "211- TVFS\r\n"
+                                "211 End.\r\n");
                         break;
 
                 case FTP_PASS:
                 case FTP_USER:
-                        send_reply(Session.cmd_sk, "230 I don't care.\r\n");
+                        reply_c("230 I don't care.\r\n");
                         break;
 
                 case FTP_SYST:
-                        send_reply(Session.cmd_sk, "215 UNIX Type: L8\r\n");
+                        reply_c("215 UNIX Type: L8\r\n");
                         break;
 
                 case FTP_OPTS:
-                        send_reply(Session.cmd_sk, "501 Option not understood.\r\n");
+                        reply_c("501 Option not understood.\r\n");
                         break;
 
                 case FTP_ACCT:
                 case FTP_SMNT:
-                        send_reply(Session.cmd_sk, "202 Unimplemented, ignored.\r\n");
+                        reply_c("202 Unimplemented, ignored.\r\n");
                         break;
 
                 case FTP_REIN:
-                        send_reply(Session.cmd_sk, "220 Nothing to REIN.\r\n");
+                        reply_c("220 Nothing to REIN.\r\n");
                         break;
 
                 /*
@@ -84,20 +85,16 @@ void command_loop (void)
                  */
                 case FTP_MODE:
                         if (toupper(Session.arg[0]) == 'S')
-                                send_reply(Session.cmd_sk,
-                                           "200 MODE set to stream.\r\n");
+                                reply_c("200 MODE set to stream.\r\n");
                         else
-                                send_reply(Session.cmd_sk,
-                                           "504 Mode not supported.\r\n");
+                                reply_c("504 Mode not supported.\r\n");
                         break;
 
                 case FTP_STRU:
                         if (toupper(Session.arg[0]) == 'F')
-                                send_reply(Session.cmd_sk,
-                                           "200 STRUcture set to file.\r\n");
+                                reply_c("200 STRUcture set to file.\r\n");
                         else
-                                send_reply(Session.cmd_sk,
-                                           "504 Structure not supported.\r\n");
+                                reply_c("504 Structure not supported.\r\n");
                         break;
 
                 case FTP_TYPE:
@@ -105,37 +102,36 @@ void command_loop (void)
                         case 'I':
                         case 'A':
                         case 'L':
-                                send_reply(Session.cmd_sk, "200 Whatever.\r\n");
+                                reply_c("200 Whatever.\r\n");
                                 break;
                         default:
-                                send_reply(Session.cmd_sk,
-                                           "501 Invalid type.\r\n");
+                                reply_c("501 Invalid type.\r\n");
                         }
                         break;
 
                 case FTP_QUIT:
-                        send_reply(Session.cmd_sk, "221 Goodbye.\r\n");
-                        close(Session.cmd_sk);
+                        reply_c("221 Goodbye.\r\n");
+                        close(Session.control_sk);
                         close(Session.passive_bind_sk);
                         exit(EXIT_SUCCESS);
                         break;
 
                 case FTP_PASV:
                         Session.passive_mode = 1;
-                        send_reply(Session.cmd_sk, Session.passive_str);
+                        reply(Session.passive_str, Session.passive_len);
                         break;
 
                 case FTP_PWD:
-                        snprintf(Session.AuxBuf, LINE_SIZE, "257 \"%s\"\r\n", &Session.cwd[1]);
-                        send_reply(Session.cmd_sk, Session.AuxBuf);
+                        l = snprintf(Session.AuxBuf, LINE_SIZE, "257 \"%s\"\r\n", &Session.cwd[1]);
+                        reply(Session.AuxBuf, l);
                         break;
 
                 case FTP_REST:
                         /* We don't need str_to_ll() as sscanf() does de job */
                         sscanf(Session.arg, "%lld", &Session.offset);
-                        snprintf(Session.AuxBuf, LINE_SIZE, "350 Got it (%lld).\r\n",
-                                 Session.offset);
-                        send_reply(Session.cmd_sk, Session.AuxBuf);
+                        l = snprintf(Session.AuxBuf, LINE_SIZE, "350 Got it (%lld).\r\n",
+                                     Session.offset);
+                        reply(Session.AuxBuf, l);
                         break;
 
                 /*
@@ -170,8 +166,11 @@ void command_loop (void)
                         break;
 
                 case FTP_NONE:
+                        reply_c("500 Command unrecognized.\r\n");
+                        break;
+
                 default:
-                        send_reply(Session.cmd_sk, "500 Command unrecognized.\r\n");
+                        reply_c("500 Command not implemented.\r\n");
                 }
         }
 }

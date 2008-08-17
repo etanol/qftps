@@ -54,20 +54,23 @@ struct _SessionScope
 {
 
         /* Buffers */
-        char   LineBuf[LINE_SIZE]; /* Incoming command line buffer */
+        char   input[LINE_SIZE]; /* Incoming command line buffer */
         char   AuxBuf[LINE_SIZE];  /* Auxiliary buffer */
+        int    input_len;
+        int    input_offset;
 
         /* chroot() emulation */
         char   cwd[LINE_SIZE];
         int    cwd_len;
 
         /* Other state information */
-        int    cmd_sk;          /* Control channel */
+        int    control_sk;
         int    data_sk;         /* Data channel */
         int    passive_bind_sk; /* Cached data socket for passive mode */
         int    passive_mode;    /* Passive mode flag */
         off_t  offset;          /* Last REST offset accepted */
         char   passive_str[64]; /* Cached reply for PASV */
+        int    passive_len;
         char  *arg;             /* Pointer to comand line argument */
 };
 
@@ -97,6 +100,8 @@ void         file_stats     (int type);          /* file_stats.c */
 void         list_dir       (int full_list);     /* list_dir.c */
 void         change_dir     (void);              /* path.c */
 int          expand_arg     (void);              /*  _/    */
-void         send_reply     (int sk, char *msg); /* misc.c */
-int          path_is_secure (char *path);        /*  _/    */
+void         read_request   (void);              /* control.c */
+void         reply          (const char *, int); /*   _/      */
+
+#define reply_c(str)  reply(str, sizeof(str) - 1)
 

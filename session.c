@@ -66,12 +66,14 @@ void init_session (int cmd_sk)
         socklen_t          saddr_len;
         char               address[16];
 
+        Session.control_sk = cmd_sk;
+
         /* Get my own IP.  As the server is listening to all network interfaces,
          * we won't know the real IP until we are connected to someone */
         saddr_len = (socklen_t) sizeof(saddr);
         err = getsockname(cmd_sk, (struct sockaddr *) &saddr, &saddr_len);
         if (err == -1) {
-                send_reply(cmd_sk, ERR_FINISH_MSG);
+                reply_c(ERR_FINISH_MSG);
                 fatal("trying to get my own address");
         }
 
@@ -82,7 +84,7 @@ void init_session (int cmd_sk)
          * response to PASV is easier (and, maybe, quicker) */
         sk = socket(PF_INET, SOCK_STREAM, 0);
         if (sk == -1) {
-                send_reply(cmd_sk, ERR_FINISH_MSG);
+                reply_c(ERR_FINISH_MSG);
                 fatal("Could not create data socket");
         }
 
@@ -97,7 +99,7 @@ void init_session (int cmd_sk)
                 err = bind(sk, (struct sockaddr *) &saddr, saddr_len);
         }
         if (i <= 0) {
-                send_reply(cmd_sk, ERR_FINISH_MSG);
+                reply_c(ERR_FINISH_MSG);
                 fatal("Could not find any bindable port");
         }
 
@@ -105,7 +107,7 @@ void init_session (int cmd_sk)
 
         err = listen(sk, 1);
         if (err == -1) {
-                send_reply(cmd_sk, ERR_FINISH_MSG);
+                reply_c(ERR_FINISH_MSG);
                 fatal("cannot listen on port");
         }
 
@@ -116,16 +118,16 @@ void init_session (int cmd_sk)
                 if (address[i] == '.')
                         address[i] = ',';
         }
-        snprintf(Session.passive_str, 64,
-                 "227 Entering Passive Mode (%s,%d,%d).\r\n", address,
-                 port >> 8, port & 0x00FF);
+        Session.passive_len = snprintf(Session.passive_str, 64,
+                                       "227 =%s,%d,%d\r\n", address, port >> 8,
+                                       port & 0x00FF);
 
         debug("Passive data port: %d\n",  port);
         debug("Passive string reply: %s", Session.passive_str);
 
         /* Set up the rest of the session state variables, except for Basedir
          * which is inherited from uftps.c */
-        Session.cmd_sk          = cmd_sk;
+        Session.control_sk      = cmd_sk;
         Session.data_sk         = -1;
         Session.offset          = 0;
         Session.passive_bind_sk = sk;
@@ -135,6 +137,6 @@ void init_session (int cmd_sk)
         Session.cwd[2]          = '\0';
         Session.cwd_len         = 3;
 
-        send_reply(cmd_sk, "220 User FTP Server ready.\r\n");
+        reply_c("220 User FTP Server ready.\r\n");
 }
 

@@ -53,7 +53,7 @@ void send_file (void)
 
         if (Session.arg == NULL)
         {
-                send_reply(Session.cmd_sk, "501 Argument required.\r\n");
+                reply_c("501 Argument required.\r\n");
                 goto finish;
         }
 
@@ -61,17 +61,17 @@ void send_file (void)
         fd = open(Session.arg, O_RDONLY, 0);
 
         if (fd == -1) {
-                send_reply(Session.cmd_sk, "550 Could not open file.\r\n");
+                reply_c("550 Could not open file.\r\n");
                 goto finish;
         }
 
         err = fstat(fd, &st);
         if (err == -1 || !S_ISREG(st.st_mode)) {
-                send_reply(Session.cmd_sk, "550 Could not stat file.\r\n");
+                reply_c("550 Could not stat file.\r\n");
                 goto finish;
         }
 
-        send_reply(Session.cmd_sk, "150 Sending file content.\r\n");
+        reply_c("150 Sending file content.\r\n");
 
         /* Apply a possible previous REST command.  Ignore errors, is it allowd
          * by the RFC? */
@@ -88,7 +88,7 @@ void send_file (void)
 
         debug("Offset end: %lld", Session.offset);
 
-        send_reply(Session.cmd_sk, "226 File content sent.\r\n");
+        reply_c("226 File content sent.\r\n");
 
 finish:
         close(Session.data_sk);
