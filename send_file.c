@@ -76,12 +76,12 @@ void send_file (void)
         /* Apply a possible previous REST command.  Ignore errors, is it allowd
          * by the RFC? */
         if (SS.file_offset > 0)
-                (void) lseek(fd, (off_t) SS.file_offset, SEEK_SET);
+                lseek(fd, SS.file_offset, SEEK_SET);
 
         while (SS.file_offset < st.st_size) {
                 debug("Offset step: %lld", SS.file_offset);
 
-                err = sendfile(SS.data_sk, fd, (off_t *) &SS.file_offset, INT_MAX);
+                err = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }
