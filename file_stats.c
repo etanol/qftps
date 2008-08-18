@@ -51,16 +51,16 @@ void file_stats (int type)
         {
         case 0: /* MDTM */
                 gmtime_r(&(st.st_mtime), &t);
-                l = snprintf(SS.AuxBuf, LINE_SIZE,
+                l = snprintf(SS.aux, LINE_SIZE,
                          "213 %4d%02d%02d%02d%02d%02d\r\n", t.tm_year + 1900,
                          t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
                 break;
 
         case 1: /* SIZE */
-                l = snprintf(SS.AuxBuf, LINE_SIZE, "213 %lld\r\n",
+                l = snprintf(SS.aux, LINE_SIZE, "213 %lld\r\n",
                          (long long) st.st_size);
         }
 
-        reply(SS.AuxBuf, l);
+        reply(SS.aux, l);
 }
 

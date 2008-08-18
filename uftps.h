@@ -18,7 +18,7 @@
  */
 
 /*
- * Common definitions and some platform independence
+ * Common definitions.
  */
 
 /* Large file support */
@@ -52,26 +52,28 @@ enum command
 /* Session (client) state */
 struct _SessionScope
 {
+        /* Sockets */
+        int    control_sk;        /* Control channel */
+        int    data_sk;           /* Data channel */
+        int    passive_sk;        /* Server socket for passive mode */
 
-        /* Buffers */
-        char   input[LINE_SIZE]; /* Incoming command line buffer */
-        char   AuxBuf[LINE_SIZE];  /* Auxiliary buffer */
-        int    input_len;
-        int    input_offset;
-
-        /* chroot() emulation */
-        char   cwd[LINE_SIZE];
-        int    cwd_len;
+        /* Buffer offsets and fill counters */
+        int    input_offset;      /* Input buffer data offset */
+        int    input_len;         /* Bytes in input buffer */
+        int    passive_len;       /* Length of passive reply */
+        int    cwd_len;           /* Length of current working directory */
 
         /* Other state information */
-        int    control_sk;
-        int    data_sk;         /* Data channel */
-        int    passive_bind_sk; /* Cached data socket for passive mode */
-        int    passive_mode;    /* Passive mode flag */
-        off_t  offset;          /* Last REST offset accepted */
-        char   passive_str[64]; /* Cached reply for PASV */
-        int    passive_len;
-        char  *arg;             /* Pointer to comand line argument */
+        int    passive_mode;      /* Passive mode flag */
+        off_t  file_offset;       /* Last REST offset accepted */
+        char  *arg;               /* Pointer to comand line argument */
+
+        /* Buffers */
+        char   input[LINE_SIZE];  /* Incoming command buffer */
+        char   aux[LINE_SIZE];    /* Auxiliary buffer */
+        char   cwd[LINE_SIZE];    /* Current Working Directory */
+        char   passive_str[64];   /* Cached reply for PASV */
+
 };
 
 extern struct _SessionScope  SS;  /* SS --> Session State */
@@ -89,7 +91,6 @@ void notice  (const char *, ...) __attribute__((format(printf,1,2)));
 void warning (const char *, ...) __attribute__((format(printf,1,2)));
 void error   (const char *, ...) __attribute__((format(printf,1,2)));
 void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
-
 
 void         init_session   (int cmd_sk);        /* session.c */
 enum command next_command   (void);              /* next_command.c */

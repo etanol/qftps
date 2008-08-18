@@ -127,15 +127,15 @@ void init_session (int cmd_sk)
 
         /* Set up the rest of the session state variables, except for Basedir
          * which is inherited from uftps.c */
-        SS.control_sk      = cmd_sk;
-        SS.data_sk         = -1;
-        SS.offset          = 0;
-        SS.passive_bind_sk = sk;
-        SS.passive_mode    = 0;
-        SS.cwd[0]          = '.';
-        SS.cwd[1]          = '/';
-        SS.cwd[2]          = '\0';
-        SS.cwd_len         = 3;
+        SS.control_sk   = cmd_sk;
+        SS.passive_sk   = sk;
+        SS.data_sk      = -1;
+        SS.file_offset  = 0;
+        SS.passive_mode = 0;
+        SS.cwd[0]       = '.';
+        SS.cwd[1]       = '/';
+        SS.cwd[2]       = '\0';
+        SS.cwd_len      = 3;
 
         reply_c("220 User FTP Server ready.\r\n");
 }

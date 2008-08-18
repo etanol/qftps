@@ -126,11 +126,11 @@ int expand_arg (void)
 {
         int  len = SS.cwd_len;
 
-        strncpy(SS.AuxBuf, SS.cwd, len);
+        strncpy(SS.aux, SS.cwd, len);
 
         if (SS.arg != NULL)
         {
-                len = apply_path(SS.arg, SS.AuxBuf, SS.cwd_len);
+                len = apply_path(SS.arg, SS.aux, SS.cwd_len);
                 if (len == -1)
                 {
                         reply_c("552 Path overflow.\r\n");
@@ -138,7 +138,7 @@ int expand_arg (void)
                 }
         }
 
-        SS.arg = SS.AuxBuf;
+        SS.arg = SS.aux;
         debug("Argument expanded to '%s'", SS.arg);
         return len;
 }

@@ -103,8 +103,8 @@ void list_dir (int full_list)
         char               item[512];
 
         if (SS.passive_mode)
-                SS.data_sk = accept(SS.passive_bind_sk,
-                                   (struct sockaddr *) &saddr, &saddr_len);
+                SS.data_sk = accept(SS.passive_sk, (struct sockaddr *) &saddr,
+                                    &saddr_len);
 
         /* Workaround for Konqueror and Nautilus */
         if (SS.arg != NULL && SS.arg[0] == '-')

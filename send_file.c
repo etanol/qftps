@@ -48,8 +48,8 @@ void send_file (void)
         socklen_t          slen = sizeof(saddr);
 
         if (SS.passive_mode)
-                SS.data_sk = accept(SS.passive_bind_sk,
-                                   (struct sockaddr *) &saddr, &slen);
+                SS.data_sk = accept(SS.passive_sk, (struct sockaddr *) &saddr,
+                                    &slen);
 
         if (SS.arg == NULL)
         {
@@ -75,25 +75,25 @@ void send_file (void)
 
         /* Apply a possible previous REST command.  Ignore errors, is it allowd
          * by the RFC? */
-        if (SS.offset > 0)
-                (void) lseek(fd, (off_t) SS.offset, SEEK_SET);
+        if (SS.file_offset > 0)
+                (void) lseek(fd, (off_t) SS.file_offset, SEEK_SET);
 
-        while (SS.offset < st.st_size) {
-                debug("Offset step: %lld", SS.offset);
+        while (SS.file_offset < st.st_size) {
+                debug("Offset step: %lld", SS.file_offset);
 
-                err = sendfile(SS.data_sk, fd, (off_t *) &SS.offset, INT_MAX);
+                err = sendfile(SS.data_sk, fd, (off_t *) &SS.file_offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }
 
-        debug("Offset end: %lld", SS.offset);
+        debug("Offset end: %lld", SS.file_offset);
 
         reply_c("226 File content sent.\r\n");
 
 finish:
         close(SS.data_sk);
         SS.passive_mode = 0;
-        SS.offset       = 0;
+        SS.file_offset  = 0;
         SS.data_sk      = -1;
 }
 

@@ -112,7 +112,7 @@ void command_loop (void)
                 case FTP_QUIT:
                         reply_c("221 Goodbye.\r\n");
                         close(SS.control_sk);
-                        close(SS.passive_bind_sk);
+                        close(SS.passive_sk);
                         exit(EXIT_SUCCESS);
                         break;
 
@@ -122,16 +122,16 @@ void command_loop (void)
                         break;
 
                 case FTP_PWD:
-                        l = snprintf(SS.AuxBuf, LINE_SIZE, "257 \"%s\"\r\n", &SS.cwd[1]);
-                        reply(SS.AuxBuf, l);
+                        l = snprintf(SS.aux, LINE_SIZE, "257 \"%s\"\r\n", &SS.cwd[1]);
+                        reply(SS.aux, l);
                         break;
 
                 case FTP_REST:
                         /* We don't need str_to_ll() as sscanf() does de job */
-                        sscanf(SS.arg, "%lld", &SS.offset);
-                        l = snprintf(SS.AuxBuf, LINE_SIZE, "350 Got it (%lld).\r\n",
-                                     SS.offset);
-                        reply(SS.AuxBuf, l);
+                        sscanf(SS.arg, "%lld", &SS.file_offset);
+                        l = snprintf(SS.aux, LINE_SIZE, "350 Got it (%lld).\r\n",
+                                     SS.file_offset);
+                        reply(SS.aux, l);
                         break;
 
                 /*
