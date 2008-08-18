@@ -28,6 +28,7 @@
 
 #include <string.h>
 
+
 /*
  * Apply new path components to an existing working directory.  The working
  * directory is contained (full path) in wd, which is a buffer with a capacity

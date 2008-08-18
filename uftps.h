@@ -69,11 +69,10 @@ struct _SessionScope
         char  *arg;               /* Pointer to comand line argument */
 
         /* Buffers */
+        char   passive_str[32];   /* Cached reply for PASV */
         char   input[LINE_SIZE];  /* Incoming command buffer */
         char   aux[LINE_SIZE];    /* Auxiliary buffer */
         char   cwd[LINE_SIZE];    /* Current Working Directory */
-        char   passive_str[64];   /* Cached reply for PASV */
-
 };
 
 extern struct _SessionScope  SS;  /* SS --> Session State */

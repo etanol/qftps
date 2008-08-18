@@ -72,7 +72,8 @@ void init_session (int cmd_sk)
          * we won't know the real IP until we are connected to someone */
         saddr_len = (socklen_t) sizeof(saddr);
         err = getsockname(cmd_sk, (struct sockaddr *) &saddr, &saddr_len);
-        if (err == -1) {
+        if (err == -1)
+        {
                 reply_c(ERR_FINISH_MSG);
                 fatal("trying to get my own address");
         }
@@ -83,7 +84,8 @@ void init_session (int cmd_sk)
          * and only one of these sockets is created per client.  Thus, the
          * response to PASV is easier (and, maybe, quicker) */
         sk = socket(PF_INET, SOCK_STREAM, 0);
-        if (sk == -1) {
+        if (sk == -1)
+        {
                 reply_c(ERR_FINISH_MSG);
                 fatal("Could not create data socket");
         }
@@ -93,12 +95,14 @@ void init_session (int cmd_sk)
         err = -1;
         setsockopt(sk, SOL_SOCKET, SO_REUSEADDR, &i, sizeof (i));
         srand((unsigned int) times (NULL));
-        for (i = 9; i > 0 && err == -1; i--) {
+        for (i = 9;  i > 0 && err == -1;  i--)
+        {
                 port = get_random_port();
                 saddr.sin_port = htons(port);
                 err = bind(sk, (struct sockaddr *) &saddr, saddr_len);
         }
-        if (i <= 0) {
+        if (i <= 0)
+        {
                 reply_c(ERR_FINISH_MSG);
                 fatal("Could not find any bindable port");
         }
@@ -106,7 +110,8 @@ void init_session (int cmd_sk)
         debug("Number of bind() tries for PASV port: %d\n", 9 - i);
 
         err = listen(sk, 1);
-        if (err == -1) {
+        if (err == -1)
+        {
                 reply_c(ERR_FINISH_MSG);
                 fatal("cannot listen on port");
         }
@@ -114,13 +119,13 @@ void init_session (int cmd_sk)
         /* As de passive socket is cached, we can do the same for the PASV
          * response string */
         strncpy(address, inet_ntoa(saddr.sin_addr), 16);
-        for (i = 0; i < 16; i++) {
+        for (i = 0;  i < 16;  i++)
+        {
                 if (address[i] == '.')
                         address[i] = ',';
         }
-        SS.passive_len = snprintf(SS.passive_str, 64,
-                                       "227 =%s,%d,%d\r\n", address, port >> 8,
-                                       port & 0x00FF);
+        SS.passive_len = snprintf(SS.passive_str, 32, "227 =%s,%d,%d\r\n",
+                                  address, port >> 8, port & 0x00FF);
 
         debug("Passive data port: %d\n",  port);
         debug("Passive string reply: %s", SS.passive_str);

@@ -39,9 +39,9 @@ void command_loop (void)
 {
         int  l;
 
-        while (1) {
-                switch (next_command()) {
-
+        do {
+                switch (next_command())
+                {
                 /*
                  * Straightforward implementations.
                  */
@@ -98,7 +98,8 @@ void command_loop (void)
                         break;
 
                 case FTP_TYPE:
-                        switch (toupper(SS.arg[0])) {
+                        switch (toupper(SS.arg[0]))
+                        {
                         case 'I':
                         case 'A':
                         case 'L':
@@ -172,6 +173,6 @@ void command_loop (void)
                 default:
                         reply_c("500 Command not implemented.\r\n");
                 }
-        }
+        } while (1);
 }
 

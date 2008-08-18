@@ -60,13 +60,15 @@ void send_file (void)
         expand_arg();
         fd = open(SS.arg, O_RDONLY, 0);
 
-        if (fd == -1) {
+        if (fd == -1)
+        {
                 reply_c("550 Could not open file.\r\n");
                 goto finish;
         }
 
         err = fstat(fd, &st);
-        if (err == -1 || !S_ISREG(st.st_mode)) {
+        if (err == -1 || !S_ISREG(st.st_mode))
+        {
                 reply_c("550 Could not stat file.\r\n");
                 goto finish;
         }
@@ -78,7 +80,8 @@ void send_file (void)
         if (SS.file_offset > 0)
                 lseek(fd, SS.file_offset, SEEK_SET);
 
-        while (SS.file_offset < st.st_size) {
+        while (SS.file_offset < st.st_size)
+        {
                 debug("Offset step: %lld", SS.file_offset);
 
                 err = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);

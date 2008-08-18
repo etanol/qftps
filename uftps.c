@@ -116,6 +116,7 @@ int main (int argc, char **argv)
                "\t%s <port>\n\n"
                "Where port must be between 1025 and 65535.\n", argv[0]);
 
+#if 0
         /* It's nearly impossible, to my knowledge, debug a program that forks.
          * First try to find the error using the debug() facility. Then, if you
          * really need to use a debugger, then replace the 0 with a 1 to compile
@@ -130,27 +131,33 @@ int main (int argc, char **argv)
         init_session(cmd_sk);
         command_loop();
         return EXIT_SUCCESS;
+#endif
 
         /* Main loop (accepting connections) */
-        while (1) {
+        do {
                 cmd_sk = accept(bind_sk, (struct sockaddr *) &saddr,
-                                  (socklen_t *) &yes);
-                if (cmd_sk == -1) {
+                                (socklen_t *) &yes);
+                if (cmd_sk == -1)
+                {
                         if (errno == EINTR)
                                 continue;
                         else
                                 fatal("Could not open command connection");
                 }
-                if (fork() == 0) {
+
+                if (fork() == 0)
+                {
                         /* Child */
                         close(bind_sk);
                         init_session(cmd_sk);
                         command_loop();
-                } else {
+                }
+                else
+                {
                         /* Parent */
                         close(cmd_sk);
                 }
-        }
+        } while (1);
         return EXIT_SUCCESS;
 }
 

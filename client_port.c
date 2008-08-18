@@ -58,24 +58,28 @@ void client_port (void)
 
         str    = SS.arg;
         commas = 0;
-        while (commas < 4) {
-                switch (*str) {
-                case '\0':
+        while (commas < 4)
+        {
+                if (*str == '\0')
+                {
                         reply_c(ERR_BAD_PARAMETER);
                         return;
-                case ',':
-                        commas++;
-                        *str = '.'; /* Fall through */
-                default:
-                        str++;
                 }
+
+                if (*str == ',')
+                {
+                        commas++;
+                        *str = '.';
+                }
+                str++;
         }
 
         str[-1] = '\0'; /* *--str++ = '\0'; */
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
         err = !inet_aton(SS.arg, &(saddr.sin_addr));
-        if (err) {
+        if (err)
+        {
                 reply_c(ERR_BAD_PARAMETER);
                 return;
         }
@@ -94,13 +98,15 @@ void client_port (void)
         saddr.sin_port   = htons(port);
 
         SS.data_sk = socket(PF_INET, SOCK_STREAM, 0);
-        if (SS.data_sk == -1) {
+        if (SS.data_sk == -1)
+        {
                 reply_c(ERR_BAD_CONNECTION);
                 return;
         }
 
         err = connect(SS.data_sk, (struct sockaddr *) &saddr, sizeof(saddr));
-        if (err == -1) {
+        if (err == -1)
+        {
                 reply_c(ERR_BAD_CONNECTION);
                 close(SS.data_sk);
                 SS.data_sk = -1;
