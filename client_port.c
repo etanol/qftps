@@ -49,7 +49,7 @@
 
 void client_port (void)
 {
-        int                commas, err, i;
+        int                sk, commas, e, i;
         unsigned short     port;
         char              *str;
         struct sockaddr_in saddr;
@@ -78,8 +78,8 @@ void client_port (void)
         str[-1] = '\0'; /* *--str++ = '\0'; */
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
-        err = !inet_aton(SS.arg, &(saddr.sin_addr));
-        if (err)
+        e = inet_aton(SS.arg, &(saddr.sin_addr));
+        if (e == 0)
         {
                 error("Translating PORT IP '%s'", SS.arg);
                 reply_c(BAD_PARAMETER);
@@ -99,24 +99,26 @@ void client_port (void)
         saddr.sin_family = AF_INET;
         saddr.sin_port   = htons(port);
 
-        SS.data_sk = socket(PF_INET, SOCK_STREAM, 0);
-        if (SS.data_sk == -1)
+        sk = socket(PF_INET, SOCK_STREAM, 0);
+        if (sk == -1)
         {
                 error("Creating socket for PORT request %s:%d", SS.arg, port);
                 reply_c(BAD_CONNECTION);
                 return;
         }
 
-        err = connect(SS.data_sk, (struct sockaddr *) &saddr, sizeof(saddr));
-        if (err == -1)
+        e = connect(sk, (struct sockaddr *) &saddr, sizeof(saddr));
+        if (e == -1)
         {
                 error("Connecting actively to %s:%d", SS.arg, port);
                 reply_c(BAD_CONNECTION);
-                close(SS.data_sk);
-                SS.data_sk = -1;
+                e = close(sk);
+                if (e == -1)
+                        error("Closing active data socket");
                 return;
         }
 
+        SS.data_sk      = sk;
         SS.passive_mode = 0;
         reply_c("200 PORT Command OK.\r\n");
 }
