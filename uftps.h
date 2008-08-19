@@ -77,7 +77,9 @@ struct _SessionScope
 
 extern struct _SessionScope  SS;  /* SS --> Session State */
 
-
+/*
+ * Logging functions.  These functions are implemented in log.c
+ */
 #ifdef DEBUG
 #  define assert(cond)  if (!(cond)) warning("Assertion '" #cond "' failed")
    void debug (const char *, ...) __attribute__((format(printf,1,2)));
@@ -91,17 +93,27 @@ void warning (const char *, ...) __attribute__((format(printf,1,2)));
 void error   (const char *, ...) __attribute__((format(printf,1,2)));
 void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
 
-void         init_session   (int cmd_sk);        /* session.c */
-enum command next_command   (void);              /* next_command.c */
-void         command_loop   (void);              /* command_loop.c */
-void         client_port    (void);              /* client_port.c */
-void         send_file      (void);              /* send_file.c */
-void         file_stats     (int type);          /* file_stats.c */
-void         list_dir       (int full_list);     /* list_dir.c */
-void         change_dir     (void);              /* path.c */
-int          expand_arg     (void);              /*  _/    */
-void         read_request   (void);              /* control.c */
-void         reply          (const char *, int); /*   _/      */
 
+/*
+ * Other functions.  Each function declared here is implemented in a separate
+ * file, with the same name as the function.  Functions sorted alphabetically.
+ */
+int          apply_path     (const char *, char *, int);
+void         change_dir     (void);
+void         client_port    (void);
+void         command_loop   (void);
+int          expand_arg     (void);
+void         file_stats     (int type);
+void         init_session   (int cmd_sk);
+void         list_dir       (int full_list);
+enum command next_command   (void);
+void         reply          (const char *, int);
+void         send_file      (void);
+
+
+/*
+ * Utility macro to call reply() with a constant string.  At compile time, the
+ * length of these strings is known.
+ */
 #define reply_c(str)  reply(str, sizeof(str) - 1)
 

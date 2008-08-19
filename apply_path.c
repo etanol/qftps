@@ -16,16 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
-
-/*
- * FUTURE IDEAS:
- *
- *    - Check every component to see if it is a symbolic link in order to
- *      protect the shared hierarchy even more.  This may come at a cost in
- *      performance though.
- */
-
 #include <string.h>
 
 
@@ -39,7 +31,7 @@
  * argument from the working directory.  In case the working directory would
  * exceed size bytes (at any stage), -1 is returning.
  */
-static int apply_path (const char *path, char *wd, int len)
+int apply_path (const char *path, char *wd, int len)
 {
         int  i;
 
@@ -96,51 +88,6 @@ static int apply_path (const char *path, char *wd, int len)
                 path += i;
         } while (1);
 
-        return len;
-}
-
-
-void change_dir (void)
-{
-        int  len;
-
-        if (SS.arg == NULL)
-        {
-                reply_c("501 Argument required.\r\n");
-                return;
-        }
-
-        len = apply_path(SS.arg, SS.cwd, SS.cwd_len);
-        if (len == -1)
-        {
-                reply_c("552 Path overflow.\r\n");
-                fatal("Path overflow in CWD");
-        }
-
-        SS.cwd_len = len;
-        reply_c("250 Directory changed.\r\n");
-        debug("Directory changed to '%s'", SS.cwd);
-}
-
-
-int expand_arg (void)
-{
-        int  len = SS.cwd_len;
-
-        strncpy(SS.aux, SS.cwd, len);
-
-        if (SS.arg != NULL)
-        {
-                len = apply_path(SS.arg, SS.aux, SS.cwd_len);
-                if (len == -1)
-                {
-                        reply_c("552 Path overflow.\r\n");
-                        fatal("Path overflow");
-                }
-        }
-
-        SS.arg = SS.aux;
-        debug("Argument expanded to '%s'", SS.arg);
         return len;
 }
 
