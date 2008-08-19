@@ -43,8 +43,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define ERR_BAD_PARAMETER  "501 Invalid PORT parameter.\r\n"
-#define ERR_BAD_CONNECTION "425 Can't open data connection.\r\n"
+#define BAD_PARAMETER  "501 Invalid PORT parameter.\r\n"
+#define BAD_CONNECTION "425 Cannot open data connection.\r\n"
 
 
 void client_port (void)
@@ -62,7 +62,8 @@ void client_port (void)
         {
                 if (*str == '\0')
                 {
-                        reply_c(ERR_BAD_PARAMETER);
+                        warning("PORT invalid parameter '%s'", SS.arg);
+                        reply_c(BAD_PARAMETER);
                         return;
                 }
 
@@ -80,7 +81,8 @@ void client_port (void)
         err = !inet_aton(SS.arg, &(saddr.sin_addr));
         if (err)
         {
-                reply_c(ERR_BAD_PARAMETER);
+                error("Translating PORT IP '%s'", SS.arg);
+                reply_c(BAD_PARAMETER);
                 return;
         }
 
@@ -92,7 +94,7 @@ void client_port (void)
         port <<= 8;
         port  |= atoi(str + i + 1);
 
-        debug("PORT parsing results: %s:%d\n", SS.arg, port);
+        debug("PORT parsing results %s:%d\n", SS.arg, port);
 
         saddr.sin_family = AF_INET;
         saddr.sin_port   = htons(port);
@@ -100,14 +102,16 @@ void client_port (void)
         SS.data_sk = socket(PF_INET, SOCK_STREAM, 0);
         if (SS.data_sk == -1)
         {
-                reply_c(ERR_BAD_CONNECTION);
+                error("Creating socket for PORT request %s:%d", SS.arg, port);
+                reply_c(BAD_CONNECTION);
                 return;
         }
 
         err = connect(SS.data_sk, (struct sockaddr *) &saddr, sizeof(saddr));
         if (err == -1)
         {
-                reply_c(ERR_BAD_CONNECTION);
+                error("Connecting actively to %s:%d", SS.arg, port);
+                reply_c(BAD_CONNECTION);
                 close(SS.data_sk);
                 SS.data_sk = -1;
                 return;
