@@ -11,7 +11,7 @@ LDFLAGS     := -Wall -pipe -Wl,-s,-O1
 LDFLAGS_DBG := -Wall -pipe -g -pg
 
 SOURCES := client_port.c command_loop.c control.c file_stats.c list_dir.c \
-           log.c next_command.c path.c send_file.c session.c uftps.c
+           log.c path.c send_file.c session.c uftps.c
 
 
 #
