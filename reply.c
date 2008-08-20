@@ -22,7 +22,8 @@
 
 
 /*
- * Send a reply to the peer over the control connection.
+ * Send a reply to the client over the control connection.  Not a complex
+ * function at all, but necessary almost everywhere else.
  */
 void reply (const char *str, int len)
 {

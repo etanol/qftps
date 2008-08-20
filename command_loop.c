@@ -16,25 +16,19 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
-
-/*
- * Main FTP server loop which attends one client.
- *
- * It seems unbelievable but it's possible to implement a FTP server without
- * the need of select() or poll().  In fact, this kind of complexity is present
- * in the client.
- *
- * Commands not implemented are interpreted as unknown.  There used to be
- * dedicated dummy messages for some of them but code simplicity is preferred.
- */
-
 #include <ctype.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 
+/*
+ * Main FTP server loop.  The switch should be converted to an indexed jump
+ * because the command values are consecutive integers.  Thus avoiding the
+ * multiple string comparisons.
+ */
 void command_loop (void)
 {
         int  l;
@@ -58,13 +52,13 @@ void command_loop (void)
                                 "211 End.\r\n");
                         break;
 
+                case FTP_SYST:
+                        reply_c("215 UNIX Type: L8\r\n");
+                        break;
+
                 case FTP_PASS:
                 case FTP_USER:
                         reply_c("230 I don't care.\r\n");
-                        break;
-
-                case FTP_SYST:
-                        reply_c("215 UNIX Type: L8\r\n");
                         break;
 
                 case FTP_OPTS:
@@ -100,14 +94,24 @@ void command_loop (void)
                 case FTP_TYPE:
                         switch (toupper(SS.arg[0]))
                         {
-                        case 'I':
-                        case 'A':
-                        case 'L':
-                                reply_c("200 Whatever.\r\n");
-                                break;
-                        default:
-                                reply_c("501 Invalid type.\r\n");
+                                case 'I':
+                                case 'A':
+                                case 'L': reply_c("200 Whatever.\r\n"); break;
+                                default : reply_c("504 Type not supported.\r\n");
                         }
+                        break;
+
+                case FTP_PWD:
+                        l = snprintf(SS.aux, LINE_SIZE, "257 \"%s\"\r\n", &SS.cwd[1]);
+                        reply(SS.aux, l);
+                        break;
+
+                case FTP_REST:
+                        /* We don't need str_to_ll() as sscanf() does de job */
+                        sscanf(SS.arg, "%lld", (long long *) &SS.file_offset);
+                        l = snprintf(SS.aux, LINE_SIZE, "350 Got it (%lld).\r\n",
+                                     (long long) SS.file_offset);
+                        reply(SS.aux, l);
                         break;
 
                 case FTP_QUIT:
@@ -120,19 +124,6 @@ void command_loop (void)
                 case FTP_PASV:
                         SS.passive_mode = 1;
                         reply(SS.passive_str, SS.passive_len);
-                        break;
-
-                case FTP_PWD:
-                        l = snprintf(SS.aux, LINE_SIZE, "257 \"%s\"\r\n", &SS.cwd[1]);
-                        reply(SS.aux, l);
-                        break;
-
-                case FTP_REST:
-                        /* We don't need str_to_ll() as sscanf() does de job */
-                        sscanf(SS.arg, "%lld", &SS.file_offset);
-                        l = snprintf(SS.aux, LINE_SIZE, "350 Got it (%lld).\r\n",
-                                     SS.file_offset);
-                        reply(SS.aux, l);
                         break;
 
                 /*
@@ -171,7 +162,7 @@ void command_loop (void)
                         break;
 
                 default:
-                        reply_c("500 Command not implemented.\r\n");
+                        reply_c("502 Command not implemented.\r\n");
                 }
         } while (1);
 }

@@ -16,8 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-#include "uftps.h"
 
+#include "uftps.h"
 #include <stdarg.h>
 #include <errno.h>
 #include <unistd.h>
@@ -26,6 +26,11 @@
 #include <string.h>
 
 
+/*
+ * Logging utility.  Display a printf()-like formatted message (msg, args) with
+ * the current PID and a severity label at the beginning of the line.  If
+ * show_error is true, append a human readable version of the last system error.
+ */
 static void message (      int      show_error,
                      const char    *severity,
                      const char    *msg,
@@ -45,6 +50,9 @@ static void message (      int      show_error,
 }
 
 
+/*
+ * Debug message.  Only enabled for debug compilations.
+ */
 #ifdef DEBUG
 void debug (const char *msg, ...)
 {
@@ -57,16 +65,22 @@ void debug (const char *msg, ...)
 #endif
 
 
+/*
+ * Informational message.
+ */
 void notice (const char *msg, ...)
 {
         va_list  args;
 
         va_start(args, msg);
-        message(0, "DEBUG", msg, args);
+        message(0, "NOTICE", msg, args);
         va_end(args);
 }
 
 
+/*
+ * Program error message.
+ */
 void warning (const char *msg, ...)
 {
         va_list  args;
@@ -77,7 +91,10 @@ void warning (const char *msg, ...)
 }
 
 
-
+/*
+ * System error message.  Displays system error information when the last error
+ * code is not zero.
+ */
 void error (const char *msg, ...)
 {
         va_list  args;
@@ -88,6 +105,10 @@ void error (const char *msg, ...)
 }
 
 
+/*
+ * Fatal error.  Displays a message similar to error() but also terminates the
+ * current process.
+ */
 void fatal (const char *msg, ...)
 {
         va_list  args;

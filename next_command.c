@@ -27,12 +27,21 @@
 #include "command_parser.h"
 
 
-static void read_command (void)
+/*
+ * Read data from the control channel until a complete request (delimited by
+ * CRLF) is found.
+ *
+ * Control channel processing is implemented in a pipelined fashion.  Trailing
+ * bytes belonging to the following request are left in the buffer; to be read
+ * in the next call to this function.
+ */
+static void read_request (void)
 {
         int  l, i, b;
 
         i = 0;
         l = SS.input_len;
+        /* Shift trailing data from previous call */
         if (SS.input_offset > 0)
                 memmove(SS.input, SS.input + SS.input_offset, l);
 
@@ -47,6 +56,7 @@ static void read_command (void)
                                 continue;
                 }
 
+                /* Buffer data exhausted, get more from the network */
                 b = read(SS.control_sk, SS.input + l, LINE_SIZE - l);
                 if (b <= 0)
                 {
@@ -67,6 +77,7 @@ static void read_command (void)
                 l += b;
         } while (1);
 
+        /* Mark residual (trailing) bytes for the next call */
         SS.input[i - 1] = '\0';
         SS.input[i]     = '\0';
         i++;
@@ -78,14 +89,16 @@ static void read_command (void)
 
 
 /*
- * Return the next command (as an integer) available in the control channel.
+ * Parse the current request from the control channel and return the
+ * corresponding command number.  The command argument (SS.arg) is filled
+ * accordingly.
  */
 enum command next_command (void)
 {
         const struct Cmd  *cmd;
         int                i;
 
-        read_command();
+        read_request();
 
         i = 0;
         while (SS.input[i] != ' ' && SS.input[i] != '\0')

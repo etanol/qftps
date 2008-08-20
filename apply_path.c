@@ -29,7 +29,10 @@
  *
  * The function returns the length of the resulting path after walking the path
  * argument from the working directory.  In case the working directory would
- * exceed size bytes (at any stage), -1 is returning.
+ * exceed size bytes (at any stage), -1 is returned.
+ *
+ * NOTE: Path lengths always include the terminating null byte.  This means that
+ *       the last useful character of the path is at length - 2.
  */
 int apply_path (const char *path, char *wd, int len)
 {

@@ -16,7 +16,16 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/sendfile.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 
 /*
  * RETR command implementation.  It uses sendfile() because seems quite optimal,
@@ -30,22 +39,12 @@
  * for passive data connections, we have to open whether theres is error or not
  * to shift one position in the connection wait queue.
  */
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <sys/sendfile.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-
 void send_file (void)
 {
-        int                fd, err;
-        struct sockaddr_in saddr;
-        struct stat        st;
-        socklen_t          slen = sizeof(saddr);
+        int                 fd, err;
+        struct sockaddr_in  saddr;
+        struct stat         st;
+        socklen_t           slen = sizeof(saddr);
 
         if (SS.passive_mode)
                 SS.data_sk = accept(SS.passive_sk, (struct sockaddr *) &saddr,
@@ -82,14 +81,14 @@ void send_file (void)
 
         while (SS.file_offset < st.st_size)
         {
-                debug("Offset step: %lld", SS.file_offset);
+                debug("Offset step: %lld", (long long) SS.file_offset);
 
                 err = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);
                 if (err == -1)
                         fatal("Could not send file");
         }
 
-        debug("Offset end: %lld", SS.file_offset);
+        debug("Offset end: %lld", (long long) SS.file_offset);
 
         reply_c("226 File content sent.\r\n");
 

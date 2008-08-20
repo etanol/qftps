@@ -16,7 +16,13 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <stdio.h>
+
 
 /*
  * File status query.
@@ -25,24 +31,25 @@
  * stat() over a given file, no matter the fields looked up.  It's handy to
  * merge all of them here so safety checks are not replicated.
  */
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <stdio.h>
-
-
 void file_stats (int type)
 {
-        int         l = 0, err;
-        struct stat st;
+        int         l = 0, e;
+        struct stat s;
         struct tm   t;
 
-        expand_arg();
-        err = stat(SS.arg, &st);
-
-        if (err == -1)
+        if (SS.arg == NULL)
         {
+                warning("Stat type %d without argument", type);
+                reply_c("501 Argument required.\r\n");
+                return;
+        }
+
+        expand_arg();
+
+        e = stat(SS.arg, &s);
+        if (e == -1)
+        {
+                error("Stating file '%s'", SS.arg);
                 reply_c("550 Could not stat file.\r\n");
                 return;
         }
@@ -50,15 +57,15 @@ void file_stats (int type)
         switch (type)
         {
         case 0: /* MDTM */
-                gmtime_r(&(st.st_mtime), &t);
+                gmtime_r(&s.st_mtime, &t);
                 l = snprintf(SS.aux, LINE_SIZE,
-                         "213 %4d%02d%02d%02d%02d%02d\r\n", t.tm_year + 1900,
-                         t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+                            "213 %4d%02d%02d%02d%02d%02d\r\n", t.tm_year + 1900,
+                            t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
                 break;
 
         case 1: /* SIZE */
                 l = snprintf(SS.aux, LINE_SIZE, "213 %lld\r\n",
-                         (long long) st.st_size);
+                             (long long) s.st_size);
         }
 
         reply(SS.aux, l);

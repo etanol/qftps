@@ -29,7 +29,15 @@
 
 #define ERR_FINISH_MSG "421 Cannot attend you now, sorry.\r\n"
 
-struct _SessionScope  SS;  /* SG --> Session State*/
+struct _SessionScope  SS;  /* SS --> Session State*/
+
+
+/*
+ * TODO: Most of the passive port stuff will be moved to a separate function, so
+ *       the PASV reply generation is delayed until the first request.  It will
+ *       also allow to alter different aspects of the passive allocation
+ *       behaviour.
+ */
 
 
 /*

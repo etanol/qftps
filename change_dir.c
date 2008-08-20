@@ -21,6 +21,14 @@
 #include <stddef.h>
 
 
+/*
+ * Change the current working directory.  In practice, only the "virtual" path
+ * is modified; without any chdir() call.  This way chroot emulation is
+ * achieved: by explicitly controlling the path.
+ *
+ * Client tries to traverse the root by issuing ".." will be silently ignored,
+ * as apply_path() swallows them.
+ */
 void change_dir (void)
 {
         int  len;

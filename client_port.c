@@ -16,26 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
-
-/*
- * PORT command implementation.
- *
- * The argument has the syntax "h1,h2,h3,h4,p1,p2".  First, we need to split IP
- * and port information "h1.h2.h3.h4\0p1,p2" (two strings).  Then obtain the
- * port number from bytes p1 and p2. inet_aton() function converts the first
- * string "h1.h2.h3.h4" into a 'struct addr_in' value.
- *
- * Port number is interpreted as it comes "p1,p2".  That is, no matter the
- * machine endianness, p1 is the most significant byte and p2 the least
- * significant byte.  But before assigning this value to the sockaddr_in
- * structure, we must encode it BIG ENDIAN (htons()).
- *
- * Once all this is done (all data processed), we are able to create a socket
- * and try to connect to it.  If everything is allright, passive mode is
- * disabled for the next command.
- */
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -43,78 +25,106 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define BAD_PARAMETER  "501 Invalid PORT parameter.\r\n"
-#define BAD_CONNECTION "425 Cannot open data connection.\r\n"
 
-
-void client_port (void)
+/*
+ * Parse a PORT argument and convert it to a internet address structure.
+ * Returns -1 when a parsing error occurs.
+ *
+ * The argument has the syntax "h1,h2,h3,h4,p1,p2".  First, we need to split IP
+ * and port information "h1.h2.h3.h4\0p1,p2" (two strings).  The IP string is
+ * finally parsed by inet_aton() into a 'struct in_addr' value.  Finally, the
+ * port number is obtained as p1 * 256 + p2 and translated to network byte
+ * ordering with htons().
+ */
+static int parse_port_argument (struct sockaddr_in *sai)
 {
-        int                sk, commas, e, i;
-        unsigned short     port;
-        char              *str;
-        struct sockaddr_in saddr;
+        int  i, j, e, commas;
+        int  port;
 
-        debug("PORT initial argument: %s\n", SS.arg);
-
-        str    = SS.arg;
+        /* "h1,h2,h3,h4,p1,p2" ==> "h1.h2.h3.h4"  "p1,p2" */
+        i      = 0;
         commas = 0;
         while (commas < 4)
         {
-                if (*str == '\0')
+                if (SS.arg[i] == '\0')
                 {
                         warning("PORT invalid parameter '%s'", SS.arg);
-                        reply_c(BAD_PARAMETER);
-                        return;
+                        return -1;
                 }
 
-                if (*str == ',')
+                if (SS.arg[i] == ',')
                 {
                         commas++;
-                        *str = '.';
+                        SS.arg[i] = '.';
                 }
-                str++;
+                i++;
         }
-
-        str[-1] = '\0'; /* *--str++ = '\0'; */
+        SS.arg[i - 1] = '\0';
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
-        e = inet_aton(SS.arg, &(saddr.sin_addr));
+        e = inet_aton(SS.arg, &sai->sin_addr);
         if (e == 0)
         {
-                error("Translating PORT IP '%s'", SS.arg);
-                reply_c(BAD_PARAMETER);
-                return;
+                error("PORT Translating IP '%s'", SS.arg);
+                return -1;
         }
 
-        /* "p1,p2" ==> unsigned short */
-        for (i = 0; str[i] != ','; i++)
-                /* ... */;
-        str[i] = '\0';
-        port   = atoi(str);
-        port <<= 8;
-        port  |= atoi(str + i + 1);
+        /* "p1,p2" ==> int (port number) */
+        j = i;
+        while (SS.arg[j] != ',')
+                j++;
+        SS.arg[j] = '\0';
+        port      = atoi(&SS.arg[i]) * 256 + atoi(&SS.arg[j + 1]);
+
+        sai->sin_family = AF_INET;
+        sai->sin_port   = htons(port);
 
         debug("PORT parsing results %s:%d\n", SS.arg, port);
+        return 0;
+}
 
-        saddr.sin_family = AF_INET;
-        saddr.sin_port   = htons(port);
 
-        sk = socket(PF_INET, SOCK_STREAM, 0);
-        if (sk == -1)
+/*
+ * PORT command implementation.
+ */
+void client_port (void)
+{
+        int                 sk, e;
+        struct sockaddr_in  sai;
+
+        if (SS.arg == NULL)
         {
-                error("Creating socket for PORT request %s:%d", SS.arg, port);
-                reply_c(BAD_CONNECTION);
+                warning("PORT without argument");
+                reply_c("501 Argument required.\r\n");
                 return;
         }
 
-        e = connect(sk, (struct sockaddr *) &saddr, sizeof(saddr));
+        debug("PORT initial argument: %s\n", SS.arg);
+
+        e = parse_port_argument(&sai);
         if (e == -1)
         {
-                error("Connecting actively to %s:%d", SS.arg, port);
-                reply_c(BAD_CONNECTION);
+                reply_c("501 Invalid PORT parameter.\r\n");
+                return;
+        }
+
+        /* Try to connect to the given address:port */
+        sk = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (sk == -1)
+        {
+                error("PORT creating socket");
+                reply_c("425 Could not create a socket.\r\n");
+                return;
+        }
+
+        e = connect(sk, (struct sockaddr *) &sai, sizeof(struct sockaddr_in));
+        if (e == -1)
+        {
+                error("PORT connecting to %s", SS.arg);
+                reply_c("425 Could not open data connection.\r\n");
                 e = close(sk);
                 if (e == -1)
-                        error("Closing active data socket");
+                        error("PORT closing data socket");
                 return;
         }
 

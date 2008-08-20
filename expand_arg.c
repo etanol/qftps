@@ -21,19 +21,27 @@
 #include <string.h>
 
 
+/*
+ * Expand the command argument to its corresponding full "virtual" path.  This
+ * is necessary because chdir() is never performed so the correct path needs to
+ * be resolved for each file or directory to be accessed.
+ *
+ * Returns the length of the expanded argument, including the trailing null
+ * byte (just as apply_path() does).
+ */
 int expand_arg (void)
 {
         int  len = SS.cwd_len;
 
-        strncpy(SS.aux, SS.cwd, len);
+        memcpy(SS.aux, SS.cwd, len);
 
         if (SS.arg != NULL)
         {
-                len = apply_path(SS.arg, SS.aux, SS.cwd_len);
+                len = apply_path(SS.arg, SS.aux, len);
                 if (len == -1)
                 {
                         reply_c("552 Path overflow.\r\n");
-                        fatal("Path overflow");
+                        fatal("Path overflow expanding argument");
                 }
         }
 

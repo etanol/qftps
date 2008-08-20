@@ -88,6 +88,10 @@ extern struct _SessionScope  SS;  /* SS --> Session State */
    static inline void debug (const char *msg, ...) {}
 #endif
 
+/*
+ * These functions will be replaced by variadic macros when compilers other than
+ * GCC can be tested.
+ */
 void notice  (const char *, ...) __attribute__((format(printf,1,2)));
 void warning (const char *, ...) __attribute__((format(printf,1,2)));
 void error   (const char *, ...) __attribute__((format(printf,1,2)));

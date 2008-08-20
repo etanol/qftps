@@ -16,10 +16,46 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <time.h>
+#include <string.h>
+#include <stdio.h>
+
+/* Month names */
+static char month[12][4] = {
+        "Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0", "Jul\0", "Aug\0",
+        "Sep\0", "Oct\0", "Nov\0", "Dec\0"
+};
+
 
 /*
- * LIST and NLST commands implementation.
+ * Temporary workaround
+ */
+static void send_data (int sk, const char *str, int len)
+{
+        int  b;
+
+        do {
+                b = write(sk, str, len);
+                if (b <= 0)
+                        return;
+
+                str += b;
+                len -= b;
+        } while (len > 0);
+}
+
+
+/*
+ * LIST and NLST commands implementation.  The boolean argument enables LIST
+ * mode, otherwise NSLT listing is sent.
  *
  * To make Mozilla Firefox list the directory contents correctly, some research
  * work had to be done.  That concluded in:
@@ -47,60 +83,22 @@
  * To obtain a more precise value for the last modification time, let the client
  * send a MDTM command.
  *
- * Note that when, for some reason, directory listing is not possible, an empty
- * list is sent.  So this error is not detected from the client, until it tries
- * to execute CWD.
- *
- * Also note that most clients will appreciate listings where all its items are
+ * Note that most clients will appreciate listings where all its items are
  * stat()-able.
+ *
+ * TODO: Notify the client about opendir() related errors, but not about stat()
+ *       errors.
  */
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <time.h>
-#include <string.h>
-#include <stdio.h>
-
-
-/* Month names */
-static char month[12][4] = {
-        "Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0", "Jul\0", "Aug\0",
-        "Sep\0", "Oct\0", "Nov\0", "Dec\0"
-};
-
-
-/*
- * Temporary workaround
- */
-static void send_data (int sk, const char *str, int len)
-{
-        int  b;
-
-        do {
-                b = write(sk, str, len);
-                if (b <= 0)
-                        return;
-
-                str += b;
-                len -= b;
-        } while (len > 0);
-}
-
-
 void list_dir (int full_list)
 {
-        int                len, l, err;
-        DIR               *dir;
-        struct dirent     *dentry;
-        struct sockaddr_in saddr;
-        struct stat        st;
-        struct tm          t;
-        socklen_t          saddr_len = sizeof(saddr);
-        char               item[512];
+        int                 len, l, err;
+        DIR                *dir;
+        struct dirent      *dentry;
+        struct sockaddr_in  saddr;
+        struct stat         st;
+        struct tm           t;
+        socklen_t           saddr_len = sizeof(saddr);
+        char                item[512];
 
         if (SS.passive_mode)
                 SS.data_sk = accept(SS.passive_sk, (struct sockaddr *) &saddr,

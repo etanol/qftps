@@ -16,23 +16,8 @@
  * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
+
 #include "uftps.h"
-
-/*
- * Main program.  Opens the command port until a client requests a connection.
- * Then the server is forked the child will manage all that client's requests.
- *
- * Attending multiple clients is necessary to allow some clients (like lftp(1))
- * perform multiple concurrent jops.  Like moving current transfer to de
- * background and then browse through directories.
- *
- * Also note that here the root directory is fixed.  As we can't protect with
- * chroot(), due to de lack of privilege, we must do a series of safety checks
- * to simulate that behaviour.  Because of this, some strong restrictions have
- * arised; which could reduce de number of FTP clients compatible with this
- * server.
- */
-
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -52,7 +37,7 @@
 static void child_finish (int sig)
 {
         while (waitpid(-1, NULL, WNOHANG) > 0)
-                debug("Collecting children.\n");
+                debug("Collecting children");
 }
 
 
@@ -63,20 +48,33 @@ static void child_finish (int sig)
  */
 static void end (int sig)
 {
-        printf("(%d) Signal caught, exiting...\n", getpid());
+        notice("Signal caught, exiting");
         exit(EXIT_SUCCESS);
 }
 
 
-/***   MAIN   ***/
+/*
+ * Main program.  Opens the command port until a client requests a connection.
+ * Then the server is forked the child will manage all that client's requests.
+ *
+ * Attending multiple clients is necessary to allow some clients (like lftp(1))
+ * perform multiple concurrent jops.  Like moving current transfer to de
+ * background and then browse through directories.
+ *
+ * Also note that here the root directory is fixed.  As we can't protect with
+ * chroot(), due to de lack of privilege, we must do a series of safety checks
+ * to simulate that behaviour.  Because of this, some strong restrictions have
+ * arised; which could reduce de number of FTP clients compatible with this
+ * server.
+ */
+
 int main (int argc, char **argv)
 {
-        int                bind_sk, cmd_sk, err, yes = 1;
-        unsigned short     port = 0;
-        struct sockaddr_in saddr;
-        struct sigaction   my_sa;
+        int                 bind_sk, cmd_sk, e, yes = 1;
+        unsigned short      port = 0;
+        struct sockaddr_in  saddr;
+        struct sigaction    my_sa;
 
-        setlinebuf(stderr);
         setlinebuf(stdout);
 
         if (argc > 1)
@@ -102,12 +100,12 @@ int main (int argc, char **argv)
                 fatal("Could not create socket");
 
         setsockopt(bind_sk, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-        err = bind(bind_sk, (struct sockaddr *) &saddr, sizeof(saddr));
-        if (err == -1)
+        e = bind(bind_sk, (struct sockaddr *) &saddr, sizeof(saddr));
+        if (e == -1)
                 fatal("Could not bind socket");
 
-        err = listen(bind_sk, 5);
-        if (err == -1)
+        e = listen(bind_sk, 5);
+        if (e == -1)
                 fatal("Could not listen at socket");
 
         printf("UFTPS listening on port %d (TCP). Use CTRL+C to finish.\n\n",
@@ -145,19 +143,29 @@ int main (int argc, char **argv)
                                 fatal("Could not open command connection");
                 }
 
-                if (fork() == 0)
+                e = fork();
+                if (e == 0)
                 {
                         /* Child */
-                        close(bind_sk);
+                        e = close(bind_sk);
+                        if (e == -1)
+                                error("Closing server socket from child");
                         init_session(cmd_sk);
                         command_loop();
                 }
                 else
                 {
                         /* Parent */
-                        close(cmd_sk);
+                        if (e == -1)
+                                error("Could not create a child process");
+
+                        e = close(cmd_sk);
+                        if (e == -1)
+                                error("Closing control channel %d from parent",
+                                      cmd_sk);
                 }
         } while (1);
+
         return EXIT_SUCCESS;
 }
 
