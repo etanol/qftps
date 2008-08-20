@@ -70,7 +70,7 @@ clean:
 	@-rm -fv *.o gmon.out
 
 distclean: clean
-	@-rm -fv uftps uftps.dbg command_list.h
+	@-rm -fv uftps uftps.dbg command_parser.h
 
 help:
 	@echo 'User targets:'
