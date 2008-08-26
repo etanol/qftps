@@ -121,16 +121,17 @@ void command_loop (void)
                         exit(EXIT_SUCCESS);
                         break;
 
-                case FTP_PASV:
-                        SS.passive_mode = 1;
-                        reply(SS.passive_str, SS.passive_len);
-                        break;
-
                 /*
                  * Complex commands implemented separately.
                  */
                 case FTP_PORT:
                         client_port();
+                        break;
+
+                case FTP_PASV:
+                        if (SS.passive_sk == -1)
+                                enable_passive();
+                        reply(SS.passive_str, SS.passive_len);
                         break;
 
                 case FTP_NLST:

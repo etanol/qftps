@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct _SessionScope  SS;  /* SS --> Session State*/
+
 
 /*
  * clid_finish
@@ -114,6 +116,20 @@ int main (int argc, char **argv)
                "\t%s <port>\n\n"
                "Where port must be between 1025 and 65535.\n", argv[0]);
 
+        /* Clear session for new incoming clients */
+        SS.passive_sk   = -1;
+        SS.data_sk      = -1;
+        SS.input_offset =  0;
+        SS.input_len    =  0;
+        SS.passive_len  =  0;
+        SS.cwd_len      =  3;
+        SS.passive_mode =  0;
+        SS.file_offset  =  0;
+        SS.arg          = NULL;
+        SS.cwd[0]       = '.';
+        SS.cwd[1]       = '/';
+        SS.cwd[2]       = '\0';
+
         /* Main server loop (accepting connections) */
         do {
                 cmd_sk = accept(bind_sk, (struct sockaddr *) &saddr,
@@ -133,7 +149,9 @@ int main (int argc, char **argv)
                         e = close(bind_sk);
                         if (e == -1)
                                 error("Closing server socket from child");
-                        init_session(cmd_sk);
+
+                        SS.control_sk = cmd_sk;
+                        reply_c("220 User FTP Server ready.\r\n");
                         command_loop();
                 }
                 else
