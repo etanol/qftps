@@ -18,9 +18,7 @@
  */
 
 #include "uftps.h"
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
 #include <sys/sendfile.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -41,14 +39,12 @@
  */
 void send_file (void)
 {
-        int                 fd, err;
-        struct sockaddr_in  saddr;
-        struct stat         st;
-        socklen_t           slen = sizeof(saddr);
+        int          fd, e;
+        struct stat  st;
 
-        if (SS.passive_mode)
-                SS.data_sk = accept(SS.passive_sk, (struct sockaddr *) &saddr,
-                                    &slen);
+        e = open_data_connection();
+        if (e == -1)
+                return;
 
         if (SS.arg == NULL)
         {
@@ -65,8 +61,8 @@ void send_file (void)
                 goto finish;
         }
 
-        err = fstat(fd, &st);
-        if (err == -1 || !S_ISREG(st.st_mode))
+        e = fstat(fd, &st);
+        if (e == -1 || !S_ISREG(st.st_mode))
         {
                 reply_c("550 Could not stat file.\r\n");
                 goto finish;
@@ -83,8 +79,8 @@ void send_file (void)
         {
                 debug("Offset step: %lld", (long long) SS.file_offset);
 
-                err = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);
-                if (err == -1)
+                e = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);
+                if (e == -1)
                         fatal("Could not send file");
         }
 

@@ -31,7 +31,7 @@
  */
 void command_loop (void)
 {
-        int  l;
+        int  e, l;
 
         do {
                 switch (next_command())
@@ -116,8 +116,16 @@ void command_loop (void)
 
                 case FTP_QUIT:
                         reply_c("221 Goodbye.\r\n");
-                        close(SS.control_sk);
-                        close(SS.passive_sk);
+                        e = close(SS.control_sk);
+                        if (e == -1)
+                                error("Closing control channel");
+
+                        if (SS.passive_sk != -1)
+                        {
+                                e = close(SS.passive_sk);
+                                if (e == -1)
+                                        error("Closing passive socket");
+                        }
                         exit(EXIT_SUCCESS);
                         break;
 
@@ -125,12 +133,14 @@ void command_loop (void)
                  * Complex commands implemented separately.
                  */
                 case FTP_PORT:
-                        client_port();
+                        parse_port_argument();
                         break;
 
                 case FTP_PASV:
                         if (SS.passive_sk == -1)
                                 enable_passive();
+                        else
+                                SS.passive_mode = 1;
                         reply(SS.passive_str, SS.passive_len);
                         break;
 

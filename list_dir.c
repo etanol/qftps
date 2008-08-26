@@ -18,10 +18,7 @@
  */
 
 #include "uftps.h"
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <time.h>
@@ -91,18 +88,16 @@ static void send_data (int sk, const char *str, int len)
  */
 void list_dir (int full_list)
 {
-        int                 len, l, err;
-        DIR                *dir;
-        struct dirent      *dentry;
-        struct sockaddr_in  saddr;
-        struct stat         st;
-        struct tm           t;
-        socklen_t           saddr_len = sizeof(saddr);
-        char                item[512];
+        int             len, l, e;
+        DIR            *dir;
+        struct dirent  *dentry;
+        struct stat     st;
+        struct tm       t;
+        char            item[512];
 
-        if (SS.passive_mode)
-                SS.data_sk = accept(SS.passive_sk, (struct sockaddr *) &saddr,
-                                    &saddr_len);
+        e = open_data_connection();
+        if (e == -1)
+                return;
 
         /* Workaround for Konqueror and Nautilus */
         if (SS.arg != NULL && SS.arg[0] == '-')
@@ -127,8 +122,8 @@ void list_dir (int full_list)
 
                 strcpy(&SS.arg[len - 1], dentry->d_name);
                 debug("Stating '%s'", SS.arg);
-                err = stat(SS.arg, &st);
-                if (err == -1)
+                e = stat(SS.arg, &st);
+                if (e == -1)
                         continue;
 
                 if (full_list)

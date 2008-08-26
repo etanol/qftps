@@ -27,6 +27,7 @@
 #define _LARGEFILE64_SOURCE
 
 #include <sys/types.h>
+#include <netinet/in.h>
 
 /* Attributes help to catch silly mistakes, but they are not always available */
 #ifndef __GNUC__
@@ -63,10 +64,15 @@ struct _SessionScope
         int    passive_len;       /* Length of passive reply */
         int    cwd_len;           /* Length of current working directory */
 
-        /* Other state information */
+        /* Misc state information */
         int    passive_mode;      /* Passive mode flag */
         off_t  file_offset;       /* Last REST offset accepted */
         char  *arg;               /* Pointer to comand line argument */
+
+        /* Session addresses */
+        struct sockaddr_in  port_destination;  /* Parsed PORT argument */
+        struct sockaddr_in  local_address;     /* Control local IP */
+        struct sockaddr_in  client_address;    /* Control peer IP */
 
         /* Buffers */
         char   passive_str[32];   /* Cached reply for PASV */
@@ -76,6 +82,7 @@ struct _SessionScope
 };
 
 extern struct _SessionScope  SS;  /* SS --> Session State */
+
 
 /*
  * Logging functions.  These functions are implemented in log.c
@@ -102,17 +109,18 @@ void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
  * Other functions.  Each function declared here is implemented in a separate
  * file, with the same name as the function.  Functions sorted alphabetically.
  */
-int          apply_path     (const char *, char *, int);
-void         change_dir     (void);
-void         client_port    (void);
-void         command_loop   (void);
-void         enable_passive (void);
-int          expand_arg     (void);
-void         file_stats     (int type);
-void         list_dir       (int full_list);
-enum command next_command   (void);
-void         reply          (const char *, int);
-void         send_file      (void);
+int          apply_path           (const char *, char *, int);
+void         change_dir           (void);
+void         command_loop         (void)  __attribute__((noreturn));
+void         enable_passive       (void);
+int          expand_arg           (void);
+void         file_stats           (int type);
+void         list_dir             (int full_list);
+enum command next_command         (void);
+int          open_data_connection (void);
+void         parse_port_argument  (void);
+void         reply                (const char *, int);
+void         send_file            (void);
 
 
 /*

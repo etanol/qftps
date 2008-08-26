@@ -18,10 +18,7 @@
  */
 
 #include "uftps.h"
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
@@ -72,15 +69,34 @@ static void end (int sig)
 
 int main (int argc, char **argv)
 {
-        int                 bind_sk, cmd_sk, e, yes = 1;
-        unsigned short      port = 0;
-        struct sockaddr_in  saddr;
+        int                 bind_sk, cmd_sk, e, yes;
+        int                 port = DEFAULT_PORT;
         struct sigaction    my_sa;
+        struct sockaddr_in  sai;
+        socklen_t           sai_len = sizeof(struct sockaddr_in);
 
         setlinebuf(stdout);
 
         if (argc > 1)
-                port = (unsigned short) atoi(argv[1]);
+        {
+                port = atoi(argv[1]) & 0x00FFFF;
+                if (port <= 1024)
+                        fatal("This port number is restricted");
+        }
+
+        /* Initialize session fields */
+        SS.passive_sk   = -1;
+        SS.data_sk      = -1;
+        SS.input_offset = 0;
+        SS.input_len    = 0;
+        SS.passive_len  = 0;
+        SS.cwd_len      = 3;
+        SS.passive_mode = 0;
+        SS.file_offset  = 0;
+        SS.arg          = NULL;
+        SS.cwd[0]       = '.';
+        SS.cwd[1]       = '/';
+        SS.cwd[2]       = '\0';
 
         /* Signal handling */
         sigfillset(&my_sa.sa_mask);
@@ -93,62 +109,54 @@ int main (int argc, char **argv)
         sigaction(SIGINT, &my_sa, NULL);
 
         /* Connection handling */
-        saddr.sin_family = AF_INET;
-        saddr.sin_port   = htons(port > 1024 ? port : DEFAULT_PORT);
-        saddr.sin_addr.s_addr = INADDR_ANY;
+        sai.sin_family      = AF_INET;
+        sai.sin_port        = htons(port);
+        sai.sin_addr.s_addr = INADDR_ANY;
 
-        bind_sk = socket(PF_INET, SOCK_STREAM, 0);
+        bind_sk = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (bind_sk == -1)
-                fatal("Could not create socket");
+                fatal("Creating main server socket");
 
+        yes = 1;
         setsockopt(bind_sk, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-        e = bind(bind_sk, (struct sockaddr *) &saddr, sizeof(saddr));
+        e = bind(bind_sk, (struct sockaddr *) &sai, sai_len);
         if (e == -1)
-                fatal("Could not bind socket");
+                fatal("Binding main server socket");
 
         e = listen(bind_sk, 5);
         if (e == -1)
-                fatal("Could not listen at socket");
+                fatal("Listening at main server socket");
 
-        printf("UFTPS listening on port %d (TCP). Use CTRL+C to finish.\n\n",
-               (port > 1024 ? port : DEFAULT_PORT));
-        printf("If you want to use a different port use:\n"
-               "\t%s <port>\n\n"
-               "Where port must be between 1025 and 65535.\n", argv[0]);
-
-        /* Clear session for new incoming clients */
-        SS.passive_sk   = -1;
-        SS.data_sk      = -1;
-        SS.input_offset =  0;
-        SS.input_len    =  0;
-        SS.passive_len  =  0;
-        SS.cwd_len      =  3;
-        SS.passive_mode =  0;
-        SS.file_offset  =  0;
-        SS.arg          = NULL;
-        SS.cwd[0]       = '.';
-        SS.cwd[1]       = '/';
-        SS.cwd[2]       = '\0';
+        notice("UFTPS listening on port %d (TCP)", port);
+        notice("Use CTRL + C to finish");
+        notice("If you want to use a different port, specify it as the only argument in the command line");
 
         /* Main server loop (accepting connections) */
         do {
-                cmd_sk = accept(bind_sk, (struct sockaddr *) &saddr,
-                                (socklen_t *) &yes);
+                sai_len = sizeof(struct sockaddr_in);
+                cmd_sk  = accept(bind_sk, (struct sockaddr *) &SS.client_address,
+                                 &sai_len);
                 if (cmd_sk == -1)
                 {
-                        if (errno == EINTR)
-                                continue;
-                        else
-                                fatal("Could not open command connection");
+                        error("Accepting incoming connection");
+                        continue;
                 }
 
                 e = fork();
                 if (e == 0)
                 {
-                        /* Child */
+                        /***  CHILD  ***/
                         e = close(bind_sk);
                         if (e == -1)
                                 error("Closing server socket from child");
+
+                        /* Get the local address in order to serve data
+                         * connections only on the associated interface */
+                        sai_len = sizeof(struct sockaddr_in);
+                        e = getsockname(cmd_sk, (struct sockaddr *) &SS.local_address,
+                                        &sai_len);
+                        if (e == -1)
+                                fatal("Getting local socket address");
 
                         SS.control_sk = cmd_sk;
                         reply_c("220 User FTP Server ready.\r\n");
@@ -156,7 +164,7 @@ int main (int argc, char **argv)
                 }
                 else
                 {
-                        /* Parent */
+                        /***  PARENT  ***/
                         if (e == -1)
                                 error("Could not create a child process");
 

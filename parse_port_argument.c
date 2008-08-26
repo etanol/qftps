@@ -18,11 +18,7 @@
  */
 
 #include "uftps.h"
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
 #include <stdlib.h>
 
 
@@ -36,10 +32,17 @@
  * port number is obtained as p1 * 256 + p2 and translated to network byte
  * ordering with htons().
  */
-static int parse_port_argument (struct sockaddr_in *sai)
+void parse_port_argument (void)
 {
         int  i, j, e, commas;
         int  port;
+
+        if (SS.arg == NULL)
+        {
+                warning("PORT without argument");
+                reply_c("501 Argument required.\r\n");
+                return;
+        }
 
         /* "h1,h2,h3,h4,p1,p2" ==> "h1.h2.h3.h4"  "p1,p2" */
         i      = 0;
@@ -49,7 +52,8 @@ static int parse_port_argument (struct sockaddr_in *sai)
                 if (SS.arg[i] == '\0')
                 {
                         warning("PORT invalid parameter '%s'", SS.arg);
-                        return -1;
+                        reply_c("501 Invalid PORT parameter.\r\n");
+                        return;
                 }
 
                 if (SS.arg[i] == ',')
@@ -62,11 +66,12 @@ static int parse_port_argument (struct sockaddr_in *sai)
         SS.arg[i - 1] = '\0';
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
-        e = inet_aton(SS.arg, &sai->sin_addr);
+        e = inet_aton(SS.arg, &SS.port_destination.sin_addr);
         if (e == 0)
         {
                 error("PORT Translating IP '%s'", SS.arg);
-                return -1;
+                reply_c("501 Invalid PORT parameter.\r\n");
+                return;
         }
 
         /* "p1,p2" ==> int (port number) */
@@ -76,60 +81,11 @@ static int parse_port_argument (struct sockaddr_in *sai)
         SS.arg[j] = '\0';
         port      = atoi(&SS.arg[i]) * 256 + atoi(&SS.arg[j + 1]);
 
-        sai->sin_family = AF_INET;
-        sai->sin_port   = htons(port);
+        SS.port_destination.sin_family = AF_INET;
+        SS.port_destination.sin_port   = htons(port);
+        SS.passive_mode                = 0;
 
         debug("PORT parsing results %s:%d\n", SS.arg, port);
-        return 0;
-}
-
-
-/*
- * PORT command implementation.
- */
-void client_port (void)
-{
-        int                 sk, e;
-        struct sockaddr_in  sai;
-
-        if (SS.arg == NULL)
-        {
-                warning("PORT without argument");
-                reply_c("501 Argument required.\r\n");
-                return;
-        }
-
-        debug("PORT initial argument: %s\n", SS.arg);
-
-        e = parse_port_argument(&sai);
-        if (e == -1)
-        {
-                reply_c("501 Invalid PORT parameter.\r\n");
-                return;
-        }
-
-        /* Try to connect to the given address:port */
-        sk = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (sk == -1)
-        {
-                error("PORT creating socket");
-                reply_c("425 Could not create a socket.\r\n");
-                return;
-        }
-
-        e = connect(sk, (struct sockaddr *) &sai, sizeof(struct sockaddr_in));
-        if (e == -1)
-        {
-                error("PORT connecting to %s", SS.arg);
-                reply_c("425 Could not open data connection.\r\n");
-                e = close(sk);
-                if (e == -1)
-                        error("PORT closing data socket");
-                return;
-        }
-
-        SS.data_sk      = sk;
-        SS.passive_mode = 0;
         reply_c("200 PORT Command OK.\r\n");
 }
 
