@@ -42,7 +42,7 @@ void send_file (void)
         int          fd, e;
         struct stat  st;
 
-        e = open_data_connection();
+        e = open_data_channel();
         if (e == -1)
                 return;
 

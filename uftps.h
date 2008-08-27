@@ -109,18 +109,18 @@ void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
  * Other functions.  Each function declared here is implemented in a separate
  * file, with the same name as the function.  Functions sorted alphabetically.
  */
-int          apply_path           (const char *, char *, int);
-void         change_dir           (void);
-void         command_loop         (void)  __attribute__((noreturn));
-void         enable_passive       (void);
-int          expand_arg           (void);
-void         file_stats           (int type);
-void         list_dir             (int full_list);
-enum command next_command         (void);
-int          open_data_connection (void);
-void         parse_port_argument  (void);
-void         reply                (const char *, int);
-void         send_file            (void);
+int          apply_path          (const char *, char *, int);
+void         change_dir          (void);
+void         command_loop        (void)  __attribute__((noreturn));
+void         enable_passive      (void);
+int          expand_arg          (void);
+void         file_stats          (int type);
+void         list_dir            (int full_list);
+enum command next_command        (void);
+int          open_data_channel   (void);
+void         parse_port_argument (void);
+void         reply               (const char *, int);
+void         send_file           (void);
 
 
 /*

@@ -38,7 +38,7 @@ static int active_connection (void)
 }
 
 
-int open_data_connection (void)
+int open_data_channel (void)
 {
         int                 sk, e;
         struct sockaddr_in  sai;

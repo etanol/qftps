@@ -95,7 +95,7 @@ void list_dir (int full_list)
         struct tm       t;
         char            item[512];
 
-        e = open_data_connection();
+        e = open_data_channel();
         if (e == -1)
                 return;
 
