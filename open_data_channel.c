@@ -18,8 +18,6 @@
  */
 
 #include "uftps.h"
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
 
 
@@ -33,14 +31,22 @@ static int active_connection (void)
 
         e = connect(sk, (struct sockaddr *) &SS.port_destination,
                     sizeof(struct sockaddr_in));
+        if (e == -1)
+        {
+                error("Initiating active data connection");
+                e = close(sk);
+                if (e == -1)
+                        error("Closing active data socket");
+                return -1;
+        }
 
-        return e == -1 ? -1 : sk;
+        return sk;
 }
 
 
 int open_data_channel (void)
 {
-        int                 sk, e;
+        int                 sk;
         struct sockaddr_in  sai;
         socklen_t           sai_len;
 
@@ -53,9 +59,6 @@ int open_data_channel (void)
         {
                 error("Opening data connection");
                 reply_c("425 Can't open data connection.\r\n");
-                e = close(sk);
-                if (e == -1)
-                        error("Closing data socket");
                 return -1;
         }
 
