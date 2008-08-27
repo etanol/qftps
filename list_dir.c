@@ -78,13 +78,10 @@ static void send_data (int sk, const char *str, int len)
  * and minute when the distance between current time and last modification time
  * is less than six months.  We don't do that as it is considered irrelevant.
  * To obtain a more precise value for the last modification time, let the client
- * send a MDTM command.
+ * send an MDTM command.
  *
  * Note that most clients will appreciate listings where all its items are
  * stat()-able.
- *
- * TODO: Notify the client about opendir() related errors, but not about stat()
- *       errors.
  */
 void list_dir (int full_list)
 {
@@ -95,36 +92,48 @@ void list_dir (int full_list)
         struct tm       t;
         char            item[512];
 
-        e = open_data_channel();
-        if (e == -1)
-                return;
-
         /* Workaround for Konqueror and Nautilus */
         if (SS.arg != NULL && SS.arg[0] == '-')
                 SS.arg = NULL;
 
         len = expand_arg();
-        dir = opendir(SS.arg);
         if (len > 3)
         {
                 SS.arg[len - 1] = '/';
                 len++;
         }
 
-        reply_c("150 Sending directory list.\r\n");
+        dir = opendir(SS.arg);
         if (dir == NULL)
-                goto finish;
+        {
+                error("Opening directory '%s'", SS.arg);
+                reply_c("550 Could not open directory.\r\n");
+                return;
+        }
+
+        e = open_data_channel();
+        if (e == -1)
+                return;
+
+        reply_c("150 Sending directory list.\r\n");
 
         do {
                 dentry = readdir(dir);
                 if (dentry == NULL)
                         break;
 
+                l = strlen(dentry->d_name);
+                if (len + l >= LINE_SIZE)
+                        fatal("Path overflow in LIST/NLST");
                 strcpy(&SS.arg[len - 1], dentry->d_name);
+
                 debug("Stating '%s'", SS.arg);
                 e = stat(SS.arg, &st);
-                if (e == -1)
+                if (e == -1 || (!S_ISDIR(st.st_mode) && !S_ISREG(st.st_mode)))
+                {
+                        debug("Dentry '%s' skipped", SS.arg);
                         continue;
+                }
 
                 if (full_list)
                 {
@@ -141,18 +150,18 @@ void list_dir (int full_list)
                 {
                         /* NLST */
                         l = snprintf(item, 512, "%s%s", dentry->d_name,
-                                     (dentry->d_type == DT_DIR ? "/\r\n"
-                                      : "\r\n"));
+                                     (S_ISDIR(st.st_mode) ? "/\r\n" : "\r\n"));
                 }
 
                 send_data(SS.data_sk, item, l);
-
         } while (1);
-        closedir(dir);
 
-finish:
         reply_c("226 Directory list sent.\r\n");
-        close(SS.data_sk);
+
+        closedir(dir);
+        e = close(SS.data_sk);
+        if (e == -1)
+                error("Closing data channel");
         SS.data_sk      = -1;
         SS.passive_mode = 0;
 }
