@@ -46,7 +46,7 @@ int expand_arg (void)
         }
 
         SS.arg = SS.aux;
-        debug("Argument expanded to '%s'", SS.arg);
+        debug("Argument expanded to %s", SS.arg);
         return len;
 }
 

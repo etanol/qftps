@@ -48,6 +48,6 @@ void change_dir (void)
 
         SS.cwd_len = len;
         reply_c("250 Directory changed.\r\n");
-        debug("Directory changed to '%s'", SS.cwd);
+        debug("Directory changed to %s", SS.cwd);
 }
 

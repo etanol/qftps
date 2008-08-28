@@ -126,11 +126,11 @@ void list_dir (int full_list)
                         fatal("Path overflow in LIST/NLST");
                 strcpy(&SS.arg[len - 1], dentry->d_name);
 
-                debug("Stating '%s'", SS.arg);
+                debug("Stating %s", SS.arg);
                 e = stat(SS.arg, &st);
                 if (e == -1 || (!S_ISDIR(st.st_mode) && !S_ISREG(st.st_mode)))
                 {
-                        debug("Dentry '%s' skipped", SS.arg);
+                        debug("Dentry %s skipped", SS.arg);
                         continue;
                 }
 

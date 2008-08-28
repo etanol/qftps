@@ -29,7 +29,7 @@ void reply (const char *str, int len)
 {
         int  b;
 
-        debug("Reply '%.*s'", len - 2, str);
+        debug("Reply   : %.*s", len - 2, str);
 
         do {
                 b = write(SS.control_sk, str, len);

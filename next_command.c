@@ -84,7 +84,7 @@ static void read_request (void)
         SS.input_len    =  l - i;
         SS.input_offset = (l - i > 0 ? i : 0);
 
-        debug("Request '%s'", SS.input);
+        debug("Request : %s", SS.input);
 }
 
 
