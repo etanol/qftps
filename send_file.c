@@ -20,7 +20,6 @@
 #include "uftps.h"
 #include <sys/stat.h>
 #include <sys/sendfile.h>
-#include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
 

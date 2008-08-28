@@ -164,6 +164,9 @@ void command_loop (void)
                         send_file();
                         break;
 
+                /*
+                 * Unrecognized or unimplemented commands.
+                 */
                 case FTP_NONE:
                         reply_c("500 Command unrecognized.\r\n");
                         break;
