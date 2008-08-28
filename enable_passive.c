@@ -54,12 +54,11 @@ void enable_passive (void)
         e = 1;
         setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, &e, sizeof(int));
 
-        /* XXX: This is temporary */
-        memset(&sai, 0, sizeof(struct sockaddr_in));
         sai_len = sizeof(struct sockaddr_in);
-
+        memcpy(&sai, &SS.local_address, sizeof(struct sockaddr_in));
+        sai.sin_port = 0;
         e = bind(bsk, (struct sockaddr *) &sai, sai_len);
-        if  (e == -1)
+        if (e == -1)
         {
                 error("Binding to a random port");
                 goto error_close;

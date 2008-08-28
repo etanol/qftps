@@ -18,6 +18,7 @@
  */
 
 #include "uftps.h"
+#include <arpa/inet.h>
 
 
 void init_session (int control_sk)
@@ -55,6 +56,8 @@ void init_session (int control_sk)
         if (e == -1)
                 fatal("Getting remote socket address");
 
+        notice("Attending new client from %s",
+               inet_ntoa(SS.client_address.sin_addr));
         reply_c("220 User FTP Server ready.\r\n");
 }
 

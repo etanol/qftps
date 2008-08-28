@@ -18,7 +18,45 @@
  */
 
 #include "uftps.h"
+#include <arpa/inet.h>
 #include <unistd.h>
+
+
+static int passive_connection (void)
+{
+        int                 sk, e;
+        struct sockaddr_in  sai;
+        socklen_t           sai_len = sizeof(struct sockaddr_in);
+
+        sk = accept(SS.passive_sk, NULL, NULL);
+
+        /* Passive socket not needed anymore */
+        e = close(SS.passive_sk);
+        if (e == -1)
+                error("Closing passive socket");
+        SS.passive_sk   = -1;
+        SS.passive_mode = 0;
+
+        if (sk == -1)
+                return -1;
+
+        /* Check if this new connection comes from the same IP as the client */
+        e = getpeername(sk, (struct sockaddr *) &sai, &sai_len);
+        if (e == -1 || sai.sin_addr.s_addr != SS.client_address.sin_addr.s_addr)
+        {
+                if (e == -1)
+                        error("Getting remote data socket address");
+                else
+                        warning("A different client (%s) connected to a passive socket",
+                                inet_ntoa(sai.sin_addr));
+                e = close(sk);
+                if (e == -1)
+                        error("Closing data socket");
+                return -1;
+        }
+
+        return sk;
+}
 
 
 static int active_connection (void)
@@ -44,27 +82,9 @@ static int active_connection (void)
 }
 
 
-static int passive_connection (void)
-{
-        int                 sk, e;
-        struct sockaddr_in  sai;
-        socklen_t           sai_len;
-
-        sk = accept(SS.passive_sk, (struct sockaddr *) &sai, &sai_len);
-
-        e = close(SS.passive_sk);
-        if (e == -1)
-                error("Closing passive socket");
-        SS.passive_sk   = -1;
-        SS.passive_mode = 0;
-
-        return sk;
-}
-
-
 int open_data_channel (void)
 {
-        int                 sk;
+        int  sk;
 
         if (SS.passive_mode)
                 sk = passive_connection();

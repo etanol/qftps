@@ -20,6 +20,7 @@
 #include "uftps.h"
 #include <arpa/inet.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /*
@@ -34,8 +35,8 @@
  */
 void parse_port_argument (void)
 {
-        int  i, j, e, commas;
-        int  port;
+        int                 commas, port, i, j, e;
+        struct sockaddr_in  sai;
 
         if (SS.arg == NULL)
         {
@@ -66,10 +67,17 @@ void parse_port_argument (void)
         SS.arg[i - 1] = '\0';
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
-        e = inet_aton(SS.arg, &SS.port_destination.sin_addr);
+        e = inet_aton(SS.arg, &sai.sin_addr);
         if (e == 0)
         {
                 error("PORT Translating IP '%s'", SS.arg);
+                reply_c("501 Invalid PORT parameter.\r\n");
+                return;
+        }
+        /* Check if destination IP is the same as the client's */
+        if (sai.sin_addr.s_addr != SS.client_address.sin_addr.s_addr)
+        {
+                error("PORT IP %s is not the same as the client's", SS.arg);
                 reply_c("501 Invalid PORT parameter.\r\n");
                 return;
         }
@@ -81,11 +89,13 @@ void parse_port_argument (void)
         SS.arg[j] = '\0';
         port      = atoi(&SS.arg[i]) * 256 + atoi(&SS.arg[j + 1]);
 
+        memset(&SS.port_destination, 0, sizeof(struct sockaddr_in));
         SS.port_destination.sin_family = AF_INET;
-        SS.port_destination.sin_port   = htons(port);
+        SS.port_destination.sin_addr   = sai.sin_addr;
+        SS.port_destination.sin_port   = htons(port & 0x00FFFF);
         SS.passive_mode                = 0;
 
-        debug("PORT parsing results %s:%d\n", SS.arg, port);
+        debug("PORT parsing results %s:%d\n", SS.arg, port & 0x00FFFF);
         reply_c("200 PORT Command OK.\r\n");
 }
 

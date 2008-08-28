@@ -120,8 +120,7 @@ int main (int argc, char **argv)
         /* Main server loop (accepting connections) */
         do {
                 sai_len = sizeof(struct sockaddr_in);
-                cmd_sk  = accept(bind_sk, (struct sockaddr *) &SS.client_address,
-                                 &sai_len);
+                cmd_sk  = accept(bind_sk, (struct sockaddr *) &sai, &sai_len);
                 if (cmd_sk == -1)
                 {
                         error("Accepting incoming connection");
