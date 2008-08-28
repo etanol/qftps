@@ -44,14 +44,30 @@ static int active_connection (void)
 }
 
 
-int open_data_channel (void)
+static int passive_connection (void)
 {
-        int                 sk;
+        int                 sk, e;
         struct sockaddr_in  sai;
         socklen_t           sai_len;
 
+        sk = accept(SS.passive_sk, (struct sockaddr *) &sai, &sai_len);
+
+        e = close(SS.passive_sk);
+        if (e == -1)
+                error("Closing passive socket");
+        SS.passive_sk   = -1;
+        SS.passive_mode = 0;
+
+        return sk;
+}
+
+
+int open_data_channel (void)
+{
+        int                 sk;
+
         if (SS.passive_mode)
-                sk = accept(SS.passive_sk, (struct sockaddr *) &sai, &sai_len);
+                sk = passive_connection();
         else
                 sk = active_connection();
 

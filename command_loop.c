@@ -137,11 +137,7 @@ void command_loop (void)
                         break;
 
                 case FTP_PASV:
-                        if (SS.passive_sk == -1)
-                                enable_passive();
-                        else
-                                SS.passive_mode = 1;
-                        reply(SS.passive_str, SS.passive_len);
+                        enable_passive();
                         break;
 
                 case FTP_NLST:

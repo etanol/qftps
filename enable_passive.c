@@ -27,27 +27,23 @@
 #include <stdio.h>
 
 
-/*
- * Return a random non-privileged port, range 1025..65536
- */
-static inline int get_random_port (void)
-{
-        int port;
-
-        port = rand() & 0x00FFFF;
-        if (port < 1024)
-                port += 1024;
-
-        return port;
-}
-
-
 void enable_passive (void)
 {
-        int                 bsk, port, i, e;
-        char                ip[16];
+        int                 bsk, l, e;
         struct sockaddr_in  sai;
         socklen_t           sai_len = sizeof(struct sockaddr_in);
+        unsigned char       addr[6];
+        char                pasv_reply[32];
+
+        /* Safety check in case there was some error before */
+        if (SS.passive_sk != -1)
+        {
+                e = close(SS.passive_sk);
+                if (e == -1)
+                        error("Closing unused passive socket");
+                SS.passive_sk   = -1;
+                SS.passive_mode = 0;
+        }
 
         bsk = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (bsk == -1)
@@ -55,58 +51,50 @@ void enable_passive (void)
                 error("Creating passive socket");
                 goto error;
         }
+        e = 1;
+        setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, &e, sizeof(int));
 
         /* XXX: This is temporary */
-        getsockname(SS.control_sk, (struct sockaddr *) &sai, &sai_len);
+        memset(&sai, 0, sizeof(struct sockaddr_in));
         sai_len = sizeof(struct sockaddr_in);
 
-        e = -1;
-        i =  1;
-        setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(int));
-        for (i = 0;  i < 9 && e == -1;  i++)
-        {
-                port = get_random_port();
-                sai.sin_port = htons(port);
-                e = bind(bsk, (struct sockaddr *) &sai, sai_len);
-        }
+        e = bind(bsk, (struct sockaddr *) &sai, sai_len);
         if  (e == -1)
         {
-                error("Could not bind to any port");
-                e = close(bsk);
-                if (e == -1)
-                        error("Closing passive socket");
-                goto error;
+                error("Binding to a random port");
+                goto error_close;
         }
-
-        debug("%d tries to end up using port %d", i, port);
-
         e = listen(bsk, 1);
         if (e == -1)
         {
                 error("Listening on passive socket");
-                e = close(bsk);
-                if (e == -1)
-                        error("Closing passive socket");
-                goto error;
+                goto error_close;
         }
 
-        strncpy(ip, inet_ntoa(sai.sin_addr), 16);
-        for (i = 0;  i < 16;  i++)
-                if (ip[i] == '.')
-                        ip[i] = ',';
-        ip[15] = '\0';
+        e = getsockname(bsk, (struct sockaddr *) &sai, &sai_len);
+        if (e == -1)
+        {
+                error("Retrieving passive socket information");
+                goto error_close;
+        }
+        memcpy(&addr[0], &sai.sin_addr, 4);
+        memcpy(&addr[4], &sai.sin_port, 2);
+
+        debug("Passive mode listening on port %d", ntohs(sai.sin_port));
 
         SS.passive_mode = 1;
         SS.passive_sk   = bsk;
-        SS.passive_len  = snprintf(SS.passive_str, 32, "227 =%s,%d,%d\r\n",
-                                  ip, port / 256, port % 256); return;
+        l = snprintf(pasv_reply, 32, "227 =%u,%u,%u,%u,%u,%u\r\n", addr[0],
+                     addr[1], addr[2], addr[3], addr[4], addr[5]);
 
-        debug("Passive string reply: %s", SS.passive_str);
+        reply(pasv_reply, l);
         return;
+
+error_close:
+        e = close(bsk);
+        if (e == -1)
+                error("Closing passive socket");
 error:
-        SS.passive_mode = 0;
-        SS.passive_sk   = -1;
-        SS.passive_len  = snprintf(SS.passive_str, 32,
-                                   "425 No way to open a port.\r\n");
+        reply_c("425 No way to open a port for you.\r\n");
 }
 

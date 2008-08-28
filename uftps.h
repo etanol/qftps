@@ -61,7 +61,6 @@ struct _SessionScope
         /* Buffer offsets and fill counters */
         int    input_offset;      /* Input buffer data offset */
         int    input_len;         /* Bytes in input buffer */
-        int    passive_len;       /* Length of passive reply */
         int    cwd_len;           /* Length of current working directory */
 
         /* Misc state information */
@@ -75,7 +74,6 @@ struct _SessionScope
         struct sockaddr_in  client_address;    /* Control peer IP */
 
         /* Buffers */
-        char   passive_str[32];   /* Cached reply for PASV */
         char   input[LINE_SIZE];  /* Incoming command buffer */
         char   aux[LINE_SIZE];    /* Auxiliary buffer */
         char   cwd[LINE_SIZE];    /* Current Working Directory */

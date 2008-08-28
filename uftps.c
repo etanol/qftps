@@ -89,7 +89,6 @@ int main (int argc, char **argv)
         SS.data_sk      = -1;
         SS.input_offset = 0;
         SS.input_len    = 0;
-        SS.passive_len  = 0;
         SS.cwd_len      = 3;
         SS.passive_mode = 0;
         SS.file_offset  = 0;
