@@ -24,6 +24,10 @@
 #include <stdio.h>
 
 
+/*
+ * PASV command implementation.  Nothing else to mention here, read the FTP RFC
+ * if you don't know about data transmission in passive mode.
+ */
 void enable_passive (void)
 {
         int                 bsk, l, e;

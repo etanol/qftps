@@ -27,12 +27,16 @@
  * be resolved for each file or directory to be accessed.
  *
  * Returns the length of the expanded argument, including the trailing null
- * byte (just as apply_path() does).
+ * byte (just as apply_path() does).  Also note that the expanded argument is
+ * saved in the auxiliary buffer and the argument pointer is redirected
+ * accordingly.
  */
 int expand_arg (void)
 {
         int  len = SS.cwd_len;
 
+        /* Even if the argument is empty, list_dir() requires the current
+         * working directory to be copied */
         memcpy(SS.aux, SS.cwd, len);
 
         if (SS.arg != NULL)

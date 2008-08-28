@@ -104,6 +104,8 @@ void list_dir (int full_list)
                 reply_c("550 Could not open directory.\r\n");
                 return;
         }
+
+        /* Prepare the argument for the listing, see below */
         if (len > 3)
         {
                 SS.arg[len - 1] = '/';
@@ -121,6 +123,12 @@ void list_dir (int full_list)
                 if (dentry == NULL)
                         break;
 
+                /*
+                 * Due to the chroot emulation, each dentry needs to be
+                 * prepended by the expanded argument (stored in the auxiliary
+                 * buffer).  Otherwise, the stat() call would fail.  And don't
+                 * forget to check buffer bounds first.
+                 */
                 l = strlen(dentry->d_name);
                 if (len + l >= LINE_SIZE)
                         fatal("Path overflow in LIST/NLST");

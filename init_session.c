@@ -45,14 +45,17 @@ void init_session (int control_sk)
         SS.cwd[2]  = '\0';
         SS.cwd_len = 3;
 
-        /* Get local an remote addresses to perform some safety checks when
-         * opening data connections */
+        /* Get local address so we can bind passive listening sockets only to
+         * the network interface the client is connected to; instead of binding
+         * to all interfaces */
         sai_len = sizeof(struct sockaddr_in);
         e = getsockname(control_sk, (struct sockaddr *) &SS.local_address,
                         &sai_len);
         if (e == -1)
                 fatal("Getting local socket address");
 
+        /* Get remote address in order to verify that we only establish data
+         * connections with the same client (at least the same IP) */
         sai_len = sizeof(struct sockaddr_in);
         e = getpeername(control_sk, (struct sockaddr *) &SS.client_address,
                         &sai_len);

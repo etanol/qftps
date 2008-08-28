@@ -44,7 +44,6 @@ void file_stats (int type)
         }
 
         expand_arg();
-
         e = stat(SS.arg, &s);
         if (e == -1)
         {
