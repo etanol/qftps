@@ -84,19 +84,6 @@ int main (int argc, char **argv)
                         fatal("This port number is restricted");
         }
 
-        /* Initialize session fields */
-        SS.passive_sk   = -1;
-        SS.data_sk      = -1;
-        SS.input_offset = 0;
-        SS.input_len    = 0;
-        SS.cwd_len      = 3;
-        SS.passive_mode = 0;
-        SS.file_offset  = 0;
-        SS.arg          = NULL;
-        SS.cwd[0]       = '.';
-        SS.cwd[1]       = '/';
-        SS.cwd[2]       = '\0';
-
         /* Signal handling */
         sigfillset(&my_sa.sa_mask);
         my_sa.sa_flags   = SA_RESTART;
@@ -149,16 +136,7 @@ int main (int argc, char **argv)
                         if (e == -1)
                                 error("Closing server socket from child");
 
-                        /* Get the local address in order to serve data
-                         * connections only on the associated interface */
-                        sai_len = sizeof(struct sockaddr_in);
-                        e = getsockname(cmd_sk, (struct sockaddr *) &SS.local_address,
-                                        &sai_len);
-                        if (e == -1)
-                                fatal("Getting local socket address");
-
-                        SS.control_sk = cmd_sk;
-                        reply_c("220 User FTP Server ready.\r\n");
+                        init_session(cmd_sk);
                         command_loop();
                 }
                 else
