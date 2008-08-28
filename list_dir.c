@@ -97,18 +97,17 @@ void list_dir (int full_list)
                 SS.arg = NULL;
 
         len = expand_arg();
-        if (len > 3)
-        {
-                SS.arg[len - 1] = '/';
-                len++;
-        }
-
         dir = opendir(SS.arg);
         if (dir == NULL)
         {
                 error("Opening directory '%s'", SS.arg);
                 reply_c("550 Could not open directory.\r\n");
                 return;
+        }
+        if (len > 3)
+        {
+                SS.arg[len - 1] = '/';
+                len++;
         }
 
         e = open_data_channel();
