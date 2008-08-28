@@ -21,6 +21,9 @@
 #include <arpa/inet.h>
 
 
+/*
+ * Initialize the session environment for a new client.
+ */
 void init_session (int control_sk)
 {
         int        e;

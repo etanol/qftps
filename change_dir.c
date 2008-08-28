@@ -26,8 +26,8 @@
  * is modified; without any chdir() call.  This way chroot emulation is
  * achieved: by explicitly controlling the path.
  *
- * Client tries to traverse the root by issuing ".." will be silently ignored,
- * as apply_path() swallows them.
+ * Any client trie to traverse the root by issuing ".." will be silently
+ * ignored, as apply_path() swallows every "." and ".." component.
  */
 void change_dir (void)
 {

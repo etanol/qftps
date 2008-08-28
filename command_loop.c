@@ -28,6 +28,8 @@
  * Main FTP server loop.  The switch should be converted to an indexed jump
  * because the command values are consecutive integers.  Thus avoiding the
  * multiple string comparisons.
+ *
+ * This function never returns.
  */
 void command_loop (void)
 {

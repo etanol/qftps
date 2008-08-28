@@ -51,6 +51,9 @@ void enable_passive (void)
         e = 1;
         setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, &e, sizeof(int));
 
+        /* In case there are various network interfaces, bind only to the one
+         * the client is connected to; and use port 0 to let the system choose
+         * one for us */
         sai_len = sizeof(struct sockaddr_in);
         memcpy(&sai, &SS.local_address, sizeof(struct sockaddr_in));
         sai.sin_port = 0;
@@ -67,22 +70,24 @@ void enable_passive (void)
                 goto error_close;
         }
 
+        /* Check what port number we were assigned */
         e = getsockname(bsk, (struct sockaddr *) &sai, &sai_len);
         if (e == -1)
         {
                 error("Retrieving passive socket information");
                 goto error_close;
         }
-        memcpy(&addr[0], &sai.sin_addr, 4);
-        memcpy(&addr[4], &sai.sin_port, 2);
-
         debug("Passive mode listening on port %d", ntohs(sai.sin_port));
 
-        SS.passive_mode = 1;
-        SS.passive_sk   = bsk;
+        /* String conversion is straightforward in IPv4, provided that all
+         * fields in sockaddr_in structures are in network byte order */
+        memcpy(&addr[0], &sai.sin_addr, 4);
+        memcpy(&addr[4], &sai.sin_port, 2);
         l = snprintf(pasv_reply, 32, "227 =%u,%u,%u,%u,%u,%u\r\n", addr[0],
                      addr[1], addr[2], addr[3], addr[4], addr[5]);
 
+        SS.passive_mode = 1;
+        SS.passive_sk   = bsk;
         reply(pasv_reply, l);
         return;
 
@@ -91,6 +96,6 @@ error_close:
         if (e == -1)
                 error("Closing passive socket");
 error:
-        reply_c("425 No way to open a port for you.\r\n");
+        reply_c("425 No way to open a port.\r\n");
 }
 
