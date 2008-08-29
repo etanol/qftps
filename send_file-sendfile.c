@@ -18,62 +18,51 @@
  */
 
 #include "uftps.h"
-#include <sys/stat.h>
 #include <sys/sendfile.h>
 #include <unistd.h>
 #include <fcntl.h>
 
 
 /*
- * RETR command implementation.  It uses sendfile() because seems quite optimal,
- * just as vsftpd does.
+ * RETR command implementation.  It uses sendfile() to minimize memory copies.
  */
 void send_file (void)
 {
-        int          fd, e;
-        struct stat  s;
+        int    f, e;
+        off_t  size, seek;
 
-        if (SS.arg == NULL)
-        {
-                reply_c("501 Argument required.\r\n");
+        f = open_file(&size);
+        if (f == -1)
                 return;
-        }
-        expand_arg();
 
-        e = lstat(SS.arg, &s);
-        if (e == -1 || !S_ISREG(s.st_mode))
+        /* Apply a possible previous REST command */
+        if (SS.file_offset > 0)
         {
-                reply_c("550 Not a file.\r\n");
-                return;
-        }
-
-        fd = open(SS.arg, O_RDONLY, 0);
-        if (fd == -1)
-        {
-                reply_c("550 Could not open file.\r\n");
-                return;
+                seek = lseek(f, SS.file_offset, SEEK_SET);
+                if (seek == -1)
+                {
+                        error("Seeking file %s", SS.arg);
+                        reply_c("450 Could not restart transfer.\r\n");
+                        close(f);
+                        return;
+                }
         }
 
         e = open_data_channel();
         if (e == -1)
         {
-                close(fd);
+                close(f);
                 return;
         }
 
         reply_c("150 Sending file content.\r\n");
 
-        /* Apply a possible previous REST command.  Ignore errors, is it allowd
-         * by the RFC? */
-        if (SS.file_offset > 0)
-                lseek(fd, SS.file_offset, SEEK_SET);
-
         e = 0;
-        while (SS.file_offset < s.st_size && e != -1)
+        while (SS.file_offset < size && e != -1)
         {
                 debug("Offset step: %lld", (long long) SS.file_offset);
 
-                e = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);
+                e = sendfile(SS.data_sk, f, &SS.file_offset, INT_MAX);
                 if (e == -1)
                         error("Sending file");
         }
@@ -85,7 +74,7 @@ void send_file (void)
         else
                 reply_c("426 Connection closed, transfer aborted.\r\n");
 
-        close(fd);
+        close(f);
         close(SS.data_sk);
         SS.data_sk     = -1;
         SS.file_offset = 0;

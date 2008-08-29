@@ -18,7 +18,6 @@
  */
 
 #include "uftps.h"
-#include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -27,33 +26,12 @@
  */
 void send_file (void)
 {
-        int          f, b, l, e;
-        off_t        progress = 0;
-        struct stat  s;
+        int    f, b, e;
+        off_t  size, progress = 0;
 
-        if (SS.arg == NULL)
-        {
-                reply_c("501 Argument required.\r\n");
-                return;
-        }
-        expand_arg();
-
-        e = lstat(SS.arg, &s);
-        if (e == -1 || !S_ISREG(s.st_mode))
-        {
-                if (e == -1)
-                        error("Stating %s", SS.arg);
-                reply_c("550 Not a file.\r\n");
-                return;
-        }
-
-        f = open(SS.arg, O_RDONLY, 0);
+        f = open_file(&size);
         if (f == -1)
-        {
-                error("Opening %s", SS.arg);
-                reply_c("550 Could not open file.\r\n");
                 return;
-        }
 
         /* Apply a possible previous REST command */
         if (SS.file_offset > 0)
@@ -81,11 +59,11 @@ void send_file (void)
          * Main transfer loop.  We use the auxiliary buffer to temporarily store
          * chunks of file.
          */
-        while (progress < s.st_size)
+        while (progress < size)
         {
                 b = read(f, SS.aux, LINE_SIZE);
                 if (b == -1)
-                        break;
+                        break;  /* Cannot show a useful error message here */
 
                 e = data_reply(SS.aux, b);
                 if (e == -1)

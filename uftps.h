@@ -132,6 +132,7 @@ void         init_session        (int);
 void         list_dir            (int);
 enum command next_command        (void);
 int          open_data_channel   (void);
+int          open_file           (off_t *);
 void         parse_port_argument (void);
 void         send_file           (void);
 

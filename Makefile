@@ -15,7 +15,7 @@ LDFLAGS_DBG := -Wall -pipe -g -pg
 
 SOURCES := change_dir.c command_loop.c enable_passive.c expand_arg.c \
            file_stats.c init_session.c list_dir.c log.c next_command.c \
-           open_data_channel.c parse_port_argument.c reply.c \
+           open_data_channel.c open_file.c parse_port_argument.c reply.c \
            send_file-$(RETR).c
 
 SOURCES_unix := $(SOURCES) main-unix.c
