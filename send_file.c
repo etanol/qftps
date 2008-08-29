@@ -50,20 +50,19 @@ void send_file (void)
                 reply_c("501 Argument required.\r\n");
                 goto finish;
         }
-
         expand_arg();
-        fd = open(SS.arg, O_RDONLY, 0);
 
-        if (fd == -1)
-        {
-                reply_c("550 Could not open file.\r\n");
-                goto finish;
-        }
-
-        e = fstat(fd, &st);
+        e = lstat(SS.arg, &st);
         if (e == -1 || !S_ISREG(st.st_mode))
         {
                 reply_c("550 Could not stat file.\r\n");
+                goto finish;
+        }
+
+        fd = open(SS.arg, O_RDONLY, 0);
+        if (fd == -1)
+        {
+                reply_c("550 Could not open file.\r\n");
                 goto finish;
         }
 

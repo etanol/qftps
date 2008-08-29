@@ -42,12 +42,15 @@ void file_stats (int type)
                 reply_c("501 Argument required.\r\n");
                 return;
         }
-
         expand_arg();
-        e = stat(SS.arg, &s);
-        if (e == -1)
+
+        e = lstat(SS.arg, &s);
+        if (e == -1 || !S_ISREG(s.st_mode) || !S_ISDIR(s.st_mode))
         {
-                error("Stating file %s", SS.arg);
+                if (e == -1)
+                        error("Stating file %s", SS.arg);
+                else
+                        warning("Path %s is not file nor directory", SS.arg);
                 reply_c("550 Could not stat file.\r\n");
                 return;
         }

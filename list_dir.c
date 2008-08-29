@@ -88,15 +88,15 @@ void list_dir (int full_list)
         int             len, l, e;
         DIR            *dir;
         struct dirent  *dentry;
-        struct stat     st;
+        struct stat     s;
         struct tm       t;
         char            item[512];
 
         /* Workaround for Konqueror and Nautilus */
         if (SS.arg != NULL && SS.arg[0] == '-')
                 SS.arg = NULL;
-
         len = expand_arg();
+
         dir = opendir(SS.arg);
         if (dir == NULL)
         {
@@ -135,8 +135,8 @@ void list_dir (int full_list)
                 strcpy(&SS.arg[len - 1], dentry->d_name);
 
                 debug("Stating %s", SS.arg);
-                e = stat(SS.arg, &st);
-                if (e == -1 || (!S_ISDIR(st.st_mode) && !S_ISREG(st.st_mode)))
+                e = lstat(SS.arg, &s);
+                if (e == -1 || (!S_ISDIR(s.st_mode) && !S_ISREG(s.st_mode)))
                 {
                         debug("Dentry %s skipped", SS.arg);
                         continue;
@@ -145,11 +145,11 @@ void list_dir (int full_list)
                 if (full_list)
                 {
                         /* LIST */
-                        gmtime_r(&(st.st_mtime), &t);
+                        gmtime_r(&(s.st_mtime), &t);
                         l = snprintf(item, 512,
                                      "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
-                                     (S_ISDIR(st.st_mode) ? "dr-xr-xr-x"
-                                      : "-r--r--r--"), (long long) st.st_size,
+                                     (S_ISDIR(s.st_mode) ? "dr-xr-xr-x"
+                                      : "-r--r--r--"), (long long) s.st_size,
                                      month[t.tm_mon], t.tm_mday, t.tm_year + 1900,
                                      dentry->d_name);
                 }
@@ -157,7 +157,7 @@ void list_dir (int full_list)
                 {
                         /* NLST */
                         l = snprintf(item, 512, "%s%s", dentry->d_name,
-                                     (S_ISDIR(st.st_mode) ? "/\r\n" : "\r\n"));
+                                     (S_ISDIR(s.st_mode) ? "/\r\n" : "\r\n"));
                 }
 
                 send_data(SS.data_sk, item, l);
