@@ -94,8 +94,8 @@ void parse_port_argument (void)
         SS.port_destination.sin_family = AF_INET;
         SS.port_destination.sin_addr   = sai.sin_addr;
         SS.port_destination.sin_port   = htons(port & 0x00FFFF);
-        SS.passive_mode                = 0;
 
+        SS.mode = ACTIVE_MODE;
         debug("PORT parsing results %s:%d\n", SS.arg, port & 0x00FFFF);
         reply_c("200 PORT Command OK.\r\n");
 }

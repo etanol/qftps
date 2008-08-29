@@ -169,7 +169,6 @@ void list_dir (int full_list)
         e = close(SS.data_sk);
         if (e == -1)
                 error("Closing data channel");
-        SS.data_sk      = -1;
-        SS.passive_mode = 0;
+        SS.data_sk = -1;
 }
 

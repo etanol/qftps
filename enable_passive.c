@@ -42,8 +42,8 @@ void enable_passive (void)
                 e = close(SS.passive_sk);
                 if (e == -1)
                         error("Closing unused passive socket");
-                SS.passive_sk   = -1;
-                SS.passive_mode = 0;
+                SS.passive_sk = -1;
+                SS.mode       = DEFAULT_MODE;
         }
 
         bsk = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -90,8 +90,8 @@ void enable_passive (void)
         l = snprintf(pasv_reply, 32, "227 =%u,%u,%u,%u,%u,%u\r\n", addr[0],
                      addr[1], addr[2], addr[3], addr[4], addr[5]);
 
-        SS.passive_mode = 1;
-        SS.passive_sk   = bsk;
+        SS.passive_sk = bsk;
+        SS.mode       = PASSIVE_MODE;
         reply(pasv_reply, l);
         return;
 

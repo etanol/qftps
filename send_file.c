@@ -79,7 +79,6 @@ void send_file (void)
         reply_c("226 File content sent.\r\n");
 
         close(SS.data_sk);
-        SS.passive_mode = 0;
         SS.file_offset  = 0;
         SS.data_sk      = -1;
 }

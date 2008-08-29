@@ -50,23 +50,31 @@ enum command
         FTP_TYPE, FTP_USER
 };
 
+/* Data channel modes */
+enum data_mode
+{
+        DEFAULT_MODE,  /* RFC default, unimplemented/unsupported */
+        ACTIVE_MODE,   /* Active mode enabled with PORT requests */
+        PASSIVE_MODE   /* Passive mode enabled with PASV requests */
+};
+
 /* Session (client) state */
 struct _SessionScope
 {
         /* Sockets */
-        int    control_sk;        /* Control channel */
-        int    data_sk;           /* Data channel */
-        int    passive_sk;        /* Server socket for passive mode */
+        int  control_sk;    /* Control channel */
+        int  data_sk;       /* Data channel */
+        int  passive_sk;    /* Server socket for passive mode */
 
         /* Buffer offsets and fill counters */
-        int    input_offset;      /* Input buffer data offset */
-        int    input_len;         /* Bytes in input buffer */
-        int    cwd_len;           /* Length of current working directory */
+        int  input_offset;  /* Input buffer data offset */
+        int  input_len;     /* Bytes in input buffer */
+        int  cwd_len;       /* Length of current working directory */
 
         /* Misc state information */
-        int    passive_mode;      /* Passive mode flag */
-        off_t  file_offset;       /* Last REST offset accepted */
-        char  *arg;               /* Pointer to comand line argument */
+        enum data_mode  mode;         /* Current data channel mode */
+        off_t           file_offset;  /* Last REST offset accepted */
+        char           *arg;          /* Pointer to comand line argument */
 
         /* Session addresses */
         struct sockaddr_in  port_destination;  /* Parsed PORT argument */
@@ -74,9 +82,9 @@ struct _SessionScope
         struct sockaddr_in  client_address;    /* Control peer IP */
 
         /* Buffers */
-        char   input[LINE_SIZE];  /* Incoming command buffer */
-        char   aux[LINE_SIZE];    /* Auxiliary buffer */
-        char   cwd[LINE_SIZE];    /* Current Working Directory */
+        char  input[LINE_SIZE];  /* Incoming command buffer */
+        char  aux[LINE_SIZE];    /* Auxiliary buffer */
+        char  cwd[LINE_SIZE];    /* Current Working Directory */
 };
 
 extern struct _SessionScope  SS;  /* SS --> Session State */

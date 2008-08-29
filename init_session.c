@@ -35,7 +35,7 @@ void init_session (int control_sk)
         SS.data_sk      = -1;
         SS.input_offset = 0;
         SS.input_len    = 0;
-        SS.passive_mode = 0;
+        SS.mode         = DEFAULT_MODE;
         SS.file_offset  = 0;
         SS.arg          = NULL;
 

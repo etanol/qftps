@@ -38,8 +38,7 @@ static int passive_connection (void)
         e = close(SS.passive_sk);
         if (e == -1)
                 error("Closing passive socket");
-        SS.passive_sk   = -1;
-        SS.passive_mode = 0;
+        SS.passive_sk = -1;
 
         if (sk == -1)
                 return -1;
@@ -102,10 +101,22 @@ int open_data_channel (void)
 {
         int  sk;
 
-        if (SS.passive_mode)
-                sk = passive_connection();
-        else
+        switch (SS.mode)
+        {
+        case ACTIVE_MODE:
                 sk = active_connection();
+                break;
+        case PASSIVE_MODE:
+                sk = passive_connection();
+                break;
+        case DEFAULT_MODE:
+        default:
+                warning("No data transfer mode selected");
+                reply_c("425 Default data transfer mode unsupported.\r\n");
+                return -1;
+        }
+
+        SS.mode = DEFAULT_MODE;
 
         if (sk == -1)
         {
