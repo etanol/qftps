@@ -24,29 +24,18 @@
 
 
 /*
- * RETR command implementation.  It uses sendfile() to minimize memory copies.
+ * RETR command implementation usin Linux sendfile() to minimize memory copies.
+ * Due to the nature of the system call, it is not even necessary to perform the
+ * initial seek in case a REST command was issued.
  */
 void send_file (void)
 {
         int    f, e;
-        off_t  size, seek;
+        off_t  size;
 
         f = open_file(&size);
         if (f == -1)
                 return;
-
-        /* Apply a possible previous REST command */
-        if (SS.file_offset > 0)
-        {
-                seek = lseek(f, SS.file_offset, SEEK_SET);
-                if (seek == -1)
-                {
-                        error("Seeking file %s", SS.arg);
-                        reply_c("450 Could not restart transfer.\r\n");
-                        close(f);
-                        return;
-                }
-        }
 
         e = open_data_channel();
         if (e == -1)
@@ -55,24 +44,20 @@ void send_file (void)
                 return;
         }
 
+        debug("Initial offset is %lld", (long long) SS.file_offset);
         reply_c("150 Sending file content.\r\n");
 
-        e = 0;
+        /* Main transfer loop */
         while (SS.file_offset < size && e != -1)
-        {
-                debug("Offset step: %lld", (long long) SS.file_offset);
-
                 e = sendfile(SS.data_sk, f, &SS.file_offset, INT_MAX);
-                if (e == -1)
-                        error("Sending file");
-        }
-
-        debug("Offset end: %lld", (long long) SS.file_offset);
 
         if (e != -1)
                 reply_c("226 File content sent.\r\n");
         else
+        {
+                error("Sending file %s", SS.aux);
                 reply_c("426 Connection closed, transfer aborted.\r\n");
+        }
 
         close(f);
         close(SS.data_sk);

@@ -53,6 +53,7 @@ void send_file (void)
                 return;
         }
 
+        debug("Initial offset is %lld", (long long) progress);
         reply_c("150 Sending file content.\r\n");
 
         /*
@@ -63,7 +64,7 @@ void send_file (void)
         {
                 b = read(f, SS.aux, LINE_SIZE);
                 if (b == -1)
-                        break;  /* Cannot show a useful error message here */
+                        break;  /* Cannot show any useful error message here */
 
                 e = data_reply(SS.aux, b);
                 if (e == -1)
