@@ -142,6 +142,10 @@ void command_loop (void)
                         enable_passive();
                         break;
 
+                case FTP_CWD:
+                        change_dir();
+                        break;
+
                 case FTP_NLST:
                         list_dir(0);
                         break;
@@ -156,10 +160,6 @@ void command_loop (void)
 
                 case FTP_SIZE:
                         file_stats(1);
-                        break;
-
-                case FTP_CWD:
-                        change_dir();
                         break;
 
                 case FTP_RETR:

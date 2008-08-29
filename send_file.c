@@ -65,18 +65,22 @@ void send_file (void)
         if (SS.file_offset > 0)
                 lseek(fd, SS.file_offset, SEEK_SET);
 
-        while (SS.file_offset < s.st_size)
+        e = 0;
+        while (SS.file_offset < s.st_size && e != -1)
         {
                 debug("Offset step: %lld", (long long) SS.file_offset);
 
                 e = sendfile(SS.data_sk, fd, &SS.file_offset, INT_MAX);
                 if (e == -1)
-                        fatal("Could not send file");
+                        error("Sending file");
         }
 
         debug("Offset end: %lld", (long long) SS.file_offset);
 
-        reply_c("226 File content sent.\r\n");
+        if (e != -1)
+                reply_c("226 File content sent.\r\n");
+        else
+                reply_c("426 Connection closed, transfer aborted.\r\n");
 
         close(SS.data_sk);
         SS.file_offset  = 0;

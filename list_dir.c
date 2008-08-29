@@ -26,27 +26,34 @@
 #include <stdio.h>
 
 /* Month names */
-static char month[12][4] = {
+static const char const month[12][4] = {
         "Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0", "Jul\0", "Aug\0",
         "Sep\0", "Oct\0", "Nov\0", "Dec\0"
 };
 
 
 /*
- * Temporary workaround
+ * Send a listing line of length "len", contained in "str" over the socket "sk".
+ * Return 0 when all "len" bytes has been transferred or -1 if there was an
+ * error or less bytes were sent.
  */
-static void send_data (int sk, const char *str, int len)
+static int send_data_line (int sk, const char *str, int len)
 {
-        int  b;
+        int  b, l = 0;
 
-        do {
-                b = write(sk, str, len);
+        while (l < len)
+        {
+                b = write(sk, &str[l], len - l);
                 if (b <= 0)
-                        return;
+                {
+                        error("Sending listing data");
+                        return -1;
+                }
 
-                str += b;
-                len -= b;
-        } while (len > 0);
+                l += b;
+        }
+
+        return 0;
 }
 
 
@@ -160,10 +167,13 @@ void list_dir (int full_list)
                                      (S_ISDIR(s.st_mode) ? "/\r\n" : "\r\n"));
                 }
 
-                send_data(SS.data_sk, item, l);
-        } while (1);
+                e = send_data_line(SS.data_sk, item, l);
+        } while (e == 0);
 
-        reply_c("226 Directory list sent.\r\n");
+        if (e == 0)
+                reply_c("226 Directory list sent.\r\n");
+        else
+                reply_c("426 Connection closed, transfer aborted.\r\n");
 
         closedir(dir);
         e = close(SS.data_sk);
