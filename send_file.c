@@ -26,45 +26,37 @@
 
 /*
  * RETR command implementation.  It uses sendfile() because seems quite optimal,
- * just as VsFTPd does.
- *
- * Same restrictions, as in change_dir.c, apply for the argument.  See that file
- * for more details.
- *
- * Usually, a client sends a PASV command then immediately connects to the port
- * indicated by the server reply.  If we are continuously reusing the same port
- * for passive data connections, we have to open whether theres is error or not
- * to shift one position in the connection wait queue.
+ * just as vsftpd does.
  */
 void send_file (void)
 {
         int          fd, e;
-        struct stat  st;
-
-        e = open_data_channel();
-        if (e == -1)
-                return;
+        struct stat  s;
 
         if (SS.arg == NULL)
         {
                 reply_c("501 Argument required.\r\n");
-                goto finish;
+                return;
         }
         expand_arg();
 
-        e = lstat(SS.arg, &st);
-        if (e == -1 || !S_ISREG(st.st_mode))
+        e = lstat(SS.arg, &s);
+        if (e == -1 || !S_ISREG(s.st_mode))
         {
-                reply_c("550 Could not stat file.\r\n");
-                goto finish;
+                reply_c("550 Argument is not a file or does not exist.\r\n");
+                return;
         }
 
         fd = open(SS.arg, O_RDONLY, 0);
         if (fd == -1)
         {
                 reply_c("550 Could not open file.\r\n");
-                goto finish;
+                return;
         }
+
+        e = open_data_channel();
+        if (e == -1)
+                return;
 
         reply_c("150 Sending file content.\r\n");
 
@@ -73,7 +65,7 @@ void send_file (void)
         if (SS.file_offset > 0)
                 lseek(fd, SS.file_offset, SEEK_SET);
 
-        while (SS.file_offset < st.st_size)
+        while (SS.file_offset < s.st_size)
         {
                 debug("Offset step: %lld", (long long) SS.file_offset);
 
@@ -86,7 +78,6 @@ void send_file (void)
 
         reply_c("226 File content sent.\r\n");
 
-finish:
         close(SS.data_sk);
         SS.passive_mode = 0;
         SS.file_offset  = 0;
