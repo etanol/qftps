@@ -18,7 +18,6 @@
  */
 
 #include "uftps.h"
-#include <unistd.h>
 
 
 /*
@@ -32,7 +31,7 @@ void reply (const char *str, int len)
         debug("Reply   : %.*s", len - 2, str);
 
         do {
-                b = write(SS.control_sk, str, len);
+                b = send(SS.control_sk, str, len, 0);
                 if (b == -1)
                         fatal("Control channel output");
 

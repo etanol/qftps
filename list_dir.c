@@ -43,7 +43,7 @@ static int send_data_line (int sk, const char *str, int len)
 
         while (l < len)
         {
-                b = write(sk, &str[l], len - l);
+                b = send(sk, &str[l], len - l, 0);
                 if (b <= 0)
                 {
                         error("Sending listing data");

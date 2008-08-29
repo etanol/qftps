@@ -19,7 +19,6 @@
 
 #include "uftps.h"
 #include <errno.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -57,7 +56,7 @@ static void read_request (void)
                 }
 
                 /* Buffer data exhausted, get more from the network */
-                b = read(SS.control_sk, SS.input + l, LINE_SIZE - l);
+                b = recv(SS.control_sk, SS.input + l, LINE_SIZE - l, 0);
                 if (b <= 0)
                 {
                         if (b == -1)
