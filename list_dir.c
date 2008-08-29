@@ -121,7 +121,10 @@ void list_dir (int full_list)
 
         e = open_data_channel();
         if (e == -1)
+        {
+                closedir(dir);
                 return;
+        }
 
         reply_c("150 Sending directory list.\r\n");
 
