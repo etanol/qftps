@@ -64,6 +64,7 @@ void init_session (int control_sk)
 
         notice("Attending new client from %s",
                inet_ntoa(SS.client_address.sin_addr));
-        reply_c("220 User FTP Server ready.\r\n");
+        reply_c("220-User FTP Server ready.\r\n"
+                "220 Features: a p .\r\n");
 }
 
