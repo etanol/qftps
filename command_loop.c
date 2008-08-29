@@ -33,7 +33,7 @@
  */
 void command_loop (void)
 {
-        int  e, l;
+        int  l;
 
         do {
                 switch (next_command())
@@ -118,16 +118,9 @@ void command_loop (void)
 
                 case FTP_QUIT:
                         reply_c("221 Goodbye.\r\n");
-                        e = close(SS.control_sk);
-                        if (e == -1)
-                                error("Closing control channel");
-
+                        close(SS.control_sk);
                         if (SS.passive_sk != -1)
-                        {
-                                e = close(SS.passive_sk);
-                                if (e == -1)
-                                        error("Closing passive socket");
-                        }
+                                close(SS.passive_sk);
                         exit(EXIT_SUCCESS);
                         break;
 

@@ -120,10 +120,7 @@ int main (int argc, char **argv)
                 if (e == 0)
                 {
                         /***  CHILD  ***/
-                        e = close(bind_sk);
-                        if (e == -1)
-                                error("Closing server socket from child");
-
+                        close(bind_sk);
                         init_session(cmd_sk);
                         command_loop();
                 }
@@ -132,11 +129,7 @@ int main (int argc, char **argv)
                         /***  PARENT  ***/
                         if (e == -1)
                                 error("Could not create a child process");
-
-                        e = close(cmd_sk);
-                        if (e == -1)
-                                error("Closing control channel %d from parent",
-                                      cmd_sk);
+                        close(cmd_sk);
                 }
         } while (1);
 

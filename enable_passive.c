@@ -39,9 +39,7 @@ void enable_passive (void)
         /* Safety check in case there was some error before */
         if (SS.passive_sk != -1)
         {
-                e = close(SS.passive_sk);
-                if (e == -1)
-                        error("Closing unused passive socket");
+                close(SS.passive_sk);
                 SS.passive_sk = -1;
                 SS.mode       = DEFAULT_MODE;
         }
@@ -50,7 +48,7 @@ void enable_passive (void)
         if (bsk == -1)
         {
                 error("Creating passive socket");
-                goto error;
+                goto out_error;
         }
         e = 1;
         setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, &e, sizeof(int));
@@ -65,13 +63,13 @@ void enable_passive (void)
         if (e == -1)
         {
                 error("Binding to a random port");
-                goto error_close;
+                goto out_error;
         }
         e = listen(bsk, 1);
         if (e == -1)
         {
                 error("Listening on passive socket");
-                goto error_close;
+                goto out_error;
         }
 
         /* Check what port number we were assigned */
@@ -79,7 +77,7 @@ void enable_passive (void)
         if (e == -1)
         {
                 error("Retrieving passive socket information");
-                goto error_close;
+                goto out_error;
         }
         debug("Passive mode listening on port %d", ntohs(sai.sin_port));
 
@@ -95,11 +93,8 @@ void enable_passive (void)
         reply(pasv_reply, l);
         return;
 
-error_close:
-        e = close(bsk);
-        if (e == -1)
-                error("Closing passive socket");
-error:
+out_error:
+        close(bsk);  /* bsk could be -1; never mind, only produces EBADF */
         reply_c("425 No way to open a port.\r\n");
 }
 

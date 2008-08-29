@@ -35,9 +35,7 @@ static int passive_connection (void)
         sk = accept(SS.passive_sk, NULL, NULL);
 
         /* Passive socket not needed anymore */
-        e = close(SS.passive_sk);
-        if (e == -1)
-                error("Closing passive socket");
+        close(SS.passive_sk);
         SS.passive_sk = -1;
 
         if (sk == -1)
@@ -52,9 +50,7 @@ static int passive_connection (void)
                 else
                         warning("A different client (%s) connected to a passive socket",
                                 inet_ntoa(sai.sin_addr));
-                e = close(sk);
-                if (e == -1)
-                        error("Closing data socket");
+                close(sk);
                 return -1;
         }
 
@@ -82,9 +78,7 @@ static int active_connection (void)
         if (e == -1)
         {
                 error("Initiating active data connection");
-                e = close(sk);
-                if (e == -1)
-                        error("Closing active data socket");
+                close(sk);
                 return -1;
         }
 

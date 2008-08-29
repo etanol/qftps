@@ -57,9 +57,7 @@ void send_file (void)
         e = open_data_channel();
         if (e == -1)
         {
-                e = close(fd);
-                if (e == -1)
-                        error("Closing retrieved file");
+                close(fd);
                 return;
         }
 
@@ -88,11 +86,8 @@ void send_file (void)
                 reply_c("426 Connection closed, transfer aborted.\r\n");
 
         close(fd);
-        e = close(SS.data_sk);
-        if (e == -1)
-                error("Closing data socket");
-
-        SS.file_offset  = 0;
-        SS.data_sk      = -1;
+        close(SS.data_sk);
+        SS.file_offset = 0;
+        SS.data_sk     = -1;
 }
 

@@ -179,9 +179,7 @@ void list_dir (int full_list)
                 reply_c("426 Connection closed, transfer aborted.\r\n");
 
         closedir(dir);
-        e = close(SS.data_sk);
-        if (e == -1)
-                error("Closing data channel");
+        close(SS.data_sk);
         SS.data_sk = -1;
 }
 
