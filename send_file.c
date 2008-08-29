@@ -43,7 +43,7 @@ void send_file (void)
         e = lstat(SS.arg, &s);
         if (e == -1 || !S_ISREG(s.st_mode))
         {
-                reply_c("550 Argument is not a file or does not exist.\r\n");
+                reply_c("550 Not a file.\r\n");
                 return;
         }
 

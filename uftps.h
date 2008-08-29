@@ -115,7 +115,6 @@ void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
  * Other functions.  Each function declared here is implemented in a separate
  * file, with the same name as the function.  Functions sorted alphabetically.
  */
-int          apply_path          (const char *, char *, int);
 void         change_dir          (void);
 void         command_loop        (void)  __attribute__((noreturn));
 void         enable_passive      (void);

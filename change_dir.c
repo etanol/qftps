@@ -18,7 +18,8 @@
  */
 
 #include "uftps.h"
-#include <stddef.h>
+#include <sys/stat.h>
+#include <string.h>
 
 
 /*
@@ -26,28 +27,38 @@
  * modified; without any chdir() call.  This way chroot emulation is achieved:
  * by explicitly controlling all paths.
  *
- * Any client trie to traverse the root by issuing ".." will be silently
- * ignored, as apply_path() swallows every "." and ".." component.
+ * Even though the process working directory never changes, the issued path is
+ * checked for existance in order to succeed.  Also, any client trie to traverse
+ * the root by issuing ".." will be silently ignored, as expand_arg() swallows
+ * every "." and ".." component.
  */
 void change_dir (void)
 {
-        int  len;
+        int          l, e;
+        struct stat  s;
 
         if (SS.arg == NULL)
         {
                 reply_c("501 Argument required.\r\n");
                 return;
         }
+        l = expand_arg();
 
-        len = apply_path(SS.arg, SS.cwd, SS.cwd_len);
-        if (len == -1)
+        e = lstat(SS.arg, &s);
+        if (e == -1 || !S_ISDIR(s.st_mode))
         {
-                reply_c("552 Path overflow.\r\n");
-                fatal("Path overflow in CWD");
+                if (e == -1)
+                        error("Stating directory %s", SS.arg);
+                else
+                        warning("Path %s is not a directory", SS.arg);
+                reply_c("550 Could not change directory.\r\n");
         }
-
-        SS.cwd_len = len;
-        reply_c("250 Directory changed.\r\n");
-        debug("Directory changed to %s", SS.cwd);
+        else
+        {
+                memcpy(SS.cwd, SS.arg, l);
+                SS.cwd_len = l;
+                debug("Directory changed to %s", SS.cwd);
+                reply_c("250 Directory changed.\r\n");
+        }
 }
 
