@@ -22,6 +22,10 @@
 #include <unistd.h>
 
 
+/*
+ * Open a data channel in passive mode.  Return the socket of the data channel
+ * if successful, -1 on any failure.
+ */
 static int passive_connection (void)
 {
         int                 sk, e;
@@ -59,6 +63,13 @@ static int passive_connection (void)
 }
 
 
+/*
+ * Open a data channel in active mode.  Return the socket of the data channel if
+ * successful, -1 on any failure.
+ *
+ * Note that peer IP check is not needed here because it was performed directly
+ * on the PORT request.
+ */
 static int active_connection (void)
 {
         int  sk, e;
@@ -82,6 +93,11 @@ static int active_connection (void)
 }
 
 
+/*
+ * Open the data channel.  When successful, the "data_sk" session field is set
+ * to the data channel socket and zero is returned.  If the connection
+ * establishment fails, -1 is returned and the client is notified.
+ */
 int open_data_channel (void)
 {
         int  sk;

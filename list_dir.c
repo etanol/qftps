@@ -126,8 +126,8 @@ void list_dir (int full_list)
                 /*
                  * Due to the chroot emulation, each dentry needs to be
                  * prepended by the expanded argument (stored in the auxiliary
-                 * buffer).  Otherwise, the stat() call would fail.  And don't
-                 * forget to check buffer bounds first.
+                 * buffer) after checking bounds.  Otherwise, the stat() call
+                 * would fail.
                  */
                 l = strlen(dentry->d_name);
                 if (len + l >= LINE_SIZE)

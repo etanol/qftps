@@ -23,13 +23,13 @@
 
 /*
  * Apply new path components to an existing working directory.  The working
- * directory is contained (full path) in wd, which is a buffer with a capacity
- * of size bytes.  This working directory path length is len bytes (counting the
- * null ending).
+ * directory is contained (full path) in "wd", which is a buffer with a capacity
+ * of LINE_SIZE bytes.  Parameter "len" specifies the current length of the
+ * working directory.
  *
- * The function returns the length of the resulting path after walking the path
- * argument from the working directory.  In case the working directory would
- * exceed size bytes (at any stage), -1 is returned.
+ * This function returns the length of "wd" after applying "path" on it, which
+ * means that the working directory is modified in-place.  In case the working
+ * directory would exceed LINE_SIZE bytes (at any stage), -1 is returned.
  *
  * NOTE: Path lengths always include the terminating null byte.  This means that
  *       the last useful character of the path is at length - 2.
@@ -73,6 +73,7 @@ int apply_path (const char *path, char *wd, int len)
                 }
                 else if (i != 1 || path[0] != '.')
                 {
+                        /* Bounds check */
                         if (len + i >= LINE_SIZE)
                                 return -1;
 

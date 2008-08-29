@@ -89,6 +89,7 @@ void parse_port_argument (void)
         SS.arg[j] = '\0';
         port      = atoi(&SS.arg[i]) * 256 + atoi(&SS.arg[j + 1]);
 
+        /* Save PORT information for later use when opening the data channel */
         memset(&SS.port_destination, 0, sizeof(struct sockaddr_in));
         SS.port_destination.sin_family = AF_INET;
         SS.port_destination.sin_addr   = sai.sin_addr;

@@ -47,7 +47,7 @@ void file_stats (int type)
         e = stat(SS.arg, &s);
         if (e == -1)
         {
-                error("Stating file '%s'", SS.arg);
+                error("Stating file %s", SS.arg);
                 reply_c("550 Could not stat file.\r\n");
                 return;
         }

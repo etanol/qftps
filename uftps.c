@@ -53,19 +53,9 @@ static void end (int sig)
 
 /*
  * Main program.  Opens the command port until a client requests a connection.
- * Then the server is forked the child will manage all that client's requests.
- *
- * Attending multiple clients is necessary to allow some clients (like lftp(1))
- * perform multiple concurrent jops.  Like moving current transfer to de
- * background and then browse through directories.
- *
- * Also note that here the root directory is fixed.  As we can't protect with
- * chroot(), due to de lack of privilege, we must do a series of safety checks
- * to simulate that behaviour.  Because of this, some strong restrictions have
- * arised; which could reduce de number of FTP clients compatible with this
- * server.
+ * Then the server is forked and the child will manage all that client's
+ * requests.
  */
-
 int main (int argc, char **argv)
 {
         int                 bind_sk, cmd_sk, e, yes;

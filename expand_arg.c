@@ -22,9 +22,9 @@
 
 
 /*
- * Expand the command argument to its corresponding full "virtual" path.  This
- * is necessary because chdir() is never performed so the correct path needs to
- * be resolved for each file or directory to be accessed.
+ * Expand the command argument to its corresponding full path.  This is
+ * necessary because chdir() is never performed so the correct path needs to be
+ * resolved for each file or directory to be accessed.
  *
  * Returns the length of the expanded argument, including the trailing null
  * byte (just as apply_path() does).  Also note that the expanded argument is

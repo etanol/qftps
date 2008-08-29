@@ -107,7 +107,7 @@ enum command next_command (void)
                 i++;
         }
 
-        SS.arg      = (SS.input[i] == ' ' ? SS.input + i + 1 : NULL);
+        SS.arg      = (SS.input[i] == ' ' ? &SS.input[i + 1] : NULL);
         SS.input[i] = '\0';
 
         cmd = parse_command(SS.input, i);

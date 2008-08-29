@@ -22,9 +22,9 @@
 
 
 /*
- * Change the current working directory.  In practice, only the "virtual" path
- * is modified; without any chdir() call.  This way chroot emulation is
- * achieved: by explicitly controlling the path.
+ * Change the current working directory.  In practice, only the FTP path is
+ * modified; without any chdir() call.  This way chroot emulation is achieved:
+ * by explicitly controlling all paths.
  *
  * Any client trie to traverse the root by issuing ".." will be silently
  * ignored, as apply_path() swallows every "." and ".." component.
