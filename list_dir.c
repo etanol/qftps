@@ -33,31 +33,6 @@ static const char const month[12][4] = {
 
 
 /*
- * Send a listing line of length "len", contained in "str" over the socket "sk".
- * Return 0 when all "len" bytes has been transferred or -1 if there was an
- * error or less bytes were sent.
- */
-static int send_data_line (int sk, const char *str, int len)
-{
-        int  b, l = 0;
-
-        while (l < len)
-        {
-                b = send(sk, &str[l], len - l, 0);
-                if (b <= 0)
-                {
-                        error("Sending listing data");
-                        return -1;
-                }
-
-                l += b;
-        }
-
-        return 0;
-}
-
-
-/*
  * LIST and NLST commands implementation.  The boolean argument enables LIST
  * mode, otherwise NSLT listing is sent.
  *
@@ -170,7 +145,7 @@ void list_dir (int full_list)
                                      (S_ISDIR(s.st_mode) ? "/\r\n" : "\r\n"));
                 }
 
-                e = send_data_line(SS.data_sk, item, l);
+                e = data_reply(item, l);
         } while (e == 0);
 
         if (e == 0)

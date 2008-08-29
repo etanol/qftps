@@ -40,3 +40,28 @@ void reply (const char *str, int len)
         } while (len > 0);
 }
 
+
+/*
+ * Send reply over the current data connection.  It succeeds (return value 0)
+ * when all data has been transferred.  It fails otherwise (return value -1),
+ * that is, either by an incomplete transfer or a system error.
+ */
+int data_reply (const char *data, int len)
+{
+        int  b, l = 0;
+
+        while (l < len)
+        {
+                b = send(SS.data_sk, &data[l], len - l, 0);
+                if (b <= 0)
+                {
+                        error("Sending listing data");
+                        return -1;
+                }
+
+                l += b;
+        }
+
+        return 0;
+}
+

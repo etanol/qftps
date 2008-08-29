@@ -87,7 +87,7 @@ void send_file (void)
 
         close(fd);
         close(SS.data_sk);
-        SS.file_offset = 0;
         SS.data_sk     = -1;
+        SS.file_offset = 0;
 }
 

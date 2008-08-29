@@ -112,6 +112,14 @@ void fatal   (const char *, ...) __attribute__((format(printf,1,2), noreturn));
 
 
 /*
+ * Reply functions, used to send data over the control and data channels
+ * respectively.  Implemented in reply.c.
+ */
+void reply      (const char *, int);
+int  data_reply (const char *, int);
+
+
+/*
  * Other functions.  Each function declared here is implemented in a separate
  * file, with the same name as the function.  Functions sorted alphabetically.
  */
@@ -125,7 +133,6 @@ void         list_dir            (int);
 enum command next_command        (void);
 int          open_data_channel   (void);
 void         parse_port_argument (void);
-void         reply               (const char *, int);
 void         send_file           (void);
 
 
