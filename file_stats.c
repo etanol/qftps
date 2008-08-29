@@ -45,7 +45,7 @@ void file_stats (int type)
         expand_arg();
 
         e = lstat(SS.arg, &s);
-        if (e == -1 || !S_ISREG(s.st_mode) || !S_ISDIR(s.st_mode))
+        if (e == -1 || (!S_ISREG(s.st_mode) && !S_ISDIR(s.st_mode)))
         {
                 if (e == -1)
                         error("Stating file %s", SS.arg);
