@@ -18,8 +18,10 @@
  */
 
 #include "uftps.h"
-#include <arpa/inet.h>
-#include <unistd.h>
+#ifndef __MINGW32__
+#  include <arpa/inet.h>
+#  include <unistd.h>
+#endif
 
 
 /*
@@ -35,7 +37,7 @@ static int passive_connection (void)
         sk = accept(SS.passive_sk, NULL, NULL);
 
         /* Passive socket not needed anymore */
-        close(SS.passive_sk);
+        closesocket(SS.passive_sk);
         SS.passive_sk = -1;
 
         if (sk == -1)
@@ -50,7 +52,7 @@ static int passive_connection (void)
                 else
                         warning("A different client (%s) connected to a passive socket",
                                 inet_ntoa(sai.sin_addr));
-                close(sk);
+                closesocket(sk);
                 return -1;
         }
 
@@ -78,7 +80,7 @@ static int active_connection (void)
         if (e == -1)
         {
                 error("Initiating active data connection");
-                close(sk);
+                closesocket(sk);
                 return -1;
         }
 

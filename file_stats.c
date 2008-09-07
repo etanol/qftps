@@ -18,8 +18,12 @@
  */
 
 #include "uftps.h"
-#include <sys/stat.h>
-#include <time.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <sys/stat.h>
+#  include <time.h>
+#endif
 #include <stdio.h>
 
 
@@ -32,9 +36,9 @@
  */
 void file_stats (int type)
 {
-        int         l = 0, e;
-        struct stat s;
-        struct tm   t;
+        int          l = 0, e;
+        struct stat  s;
+        struct tm   *t;
 
         if (SS.arg == NULL)
         {
@@ -58,10 +62,17 @@ void file_stats (int type)
         switch (type)
         {
         case 0: /* MDTM */
-                gmtime_r(&s.st_mtime, &t);
-                l = snprintf(SS.aux, LINE_SIZE,
-                            "213 %4d%02d%02d%02d%02d%02d\r\n", t.tm_year + 1900,
-                            t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec);
+                t = gmtime(&s.st_mtime);
+                if (t == NULL)
+                {
+                        error("Converting time of %s", SS.arg);
+                        reply_c("550 Error converting time.\r\n");
+                        return;
+                }
+
+                l = snprintf(SS.aux, LINE_SIZE, "213 %4d%02d%02d%02d%02d%02d\r\n",
+                             t->tm_year + 1900, t->tm_mon, t->tm_mday,
+                             t->tm_hour, t->tm_min, t->tm_sec);
                 break;
 
         case 1: /* SIZE */

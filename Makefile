@@ -7,7 +7,7 @@
 RETR ?= generic
 
 CC          ?= gcc
-HCC         := i586-mingw32msvc-gcc
+HCC         := i586-mingw32msvc-gcc -D__MSVCRT_VERSION__=0x0601
 CFLAGS      := -O2 -Wall -pipe -fomit-frame-pointer
 CFLAGS_DBG  := -O0 -Wall -pipe -g -pg -DDEBUG
 LDFLAGS     := -Wall -pipe -Wl,-s,-O1
@@ -45,10 +45,10 @@ uftps.dbg: $(SOURCES_unix:.c=.dbg.o)
 	@echo ' Linking   [debug] $@' && $(CC) $(LDFLAGS_DBG) -o $@ $^
 
 uftps.exe: $(SOURCES_hase:.c=.obj)
-	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^
+	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^ -lws2_32
 
 uftps.dbg.exe: $(SOURCES_hase:.c=.dbg.obj)
-	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^
+	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ -lws2_32
 
 
 #
@@ -62,7 +62,7 @@ else
 	@echo ' Compiling         $@' && $(CC) $(CFLAGS) -c -o $@ $<
 endif
 
-%.obj: %.c
+%.obj: %.c uftps.h hase.h
 ifdef ARCH
 	@echo ' Compiling [win32] [tuned] $@' && $(HCC) $(CFLAGS) $(ARCH) -c -o $@ $<
 else
@@ -72,7 +72,7 @@ endif
 %.dbg.o: %.c uftps.h
 	@echo ' Compiling [debug] $@' && $(CC) $(CFLAGS_DBG) -c -o $@ $<
 
-%.dbg.obj: %.c
+%.dbg.obj: %.c uftps.h hase.h
 	@echo ' Compiling [win32] [debug] $@' && $(HCC) $(CFLAGS_DBG) -c -o $@ $<
 
 

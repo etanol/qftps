@@ -26,11 +26,24 @@
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
+/* Early multiplaform support */
+#define WINVER 0x0501
+#define _NO_OLDNAMES
+
 #include <sys/types.h>
-#include <netinet/in.h>
+#ifdef __MINGW32__
+#  include <winsock2.h>
+   typedef _off_t off_t;
+   typedef int socklen_t;
+#  define CCP_CAST  (const char *)
+#else
+#  include <netinet/in.h>
+#  define closesocket(s)  close(s)
+#  define CCP_CAST
+#endif
 
 /* Attributes help to catch silly mistakes, but they are not always available */
-#ifndef __GNUC__
+#if !defined(__GNUC__) && !defined(__MINGW32__)
 #  define __attribute__(x)
 #endif
 

@@ -18,8 +18,13 @@
  */
 
 #include "uftps.h"
-#include <unistd.h>
-#include <fcntl.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <unistd.h>
+#  include <fcntl.h>
+#endif
+
 
 /*
  * Generic RETR command implementation.
@@ -27,17 +32,20 @@
 void send_file (void)
 {
         int    f, b, e;
-        off_t  size, progress = 0;
+        off_t  size, completed = 0;
 
         f = open_file(&size);
         if (f == -1)
+        {
+                SS.file_offset = 0;
                 return;
+        }
 
         /* Apply a possible previous REST command */
         if (SS.file_offset > 0)
         {
-                progress = lseek(f, SS.file_offset, SEEK_SET);
-                if (progress == -1)
+                completed = lseek(f, SS.file_offset, SEEK_SET);
+                if (completed == -1)
                 {
                         error("Seeking file %s", SS.arg);
                         reply_c("450 Could not restart transfer.\r\n");
@@ -53,14 +61,14 @@ void send_file (void)
                 return;
         }
 
-        debug("Initial offset is %lld", (long long) progress);
         reply_c("150 Sending file content.\r\n");
+        debug("Initial offset is %lld", (long long) completed);
 
         /*
          * Main transfer loop.  We use the auxiliary buffer to temporarily store
          * chunks of file.
          */
-        while (progress < size)
+        while (completed < size)
         {
                 b = read(f, SS.aux, LINE_SIZE);
                 if (b == -1)
@@ -70,7 +78,7 @@ void send_file (void)
                 if (e == -1)
                         break;
 
-                progress += b;
+                completed += b;
         }
 
         if (b != -1 && e != -1)
@@ -79,8 +87,7 @@ void send_file (void)
                 reply_c("426 Something happened, transfer aborted.\r\n");
 
         close(f);
-        close(SS.data_sk);
-        SS.data_sk     = -1;
-        SS.file_offset = 0;
+        closesocket(SS.data_sk);
+        SS.data_sk = -1;
 }
 

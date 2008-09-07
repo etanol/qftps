@@ -18,9 +18,13 @@
  */
 
 #include "uftps.h"
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <sys/stat.h>
+#  include <unistd.h>
+#  include <fcntl.h>
+#endif
 
 
 /*
@@ -55,7 +59,7 @@ int open_file (off_t *file_size)
         }
         *file_size = s.st_size;
 
-        f = open(SS.arg, O_RDONLY, 0);
+        f = open(SS.arg, O_RDONLY);
         if (f == -1)
         {
                 error("Opening file %s", SS.arg);

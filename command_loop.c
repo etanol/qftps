@@ -118,9 +118,9 @@ void command_loop (void)
 
                 case FTP_QUIT:
                         reply_c("221 Goodbye.\r\n");
-                        close(SS.control_sk);
+                        closesocket(SS.control_sk);
                         if (SS.passive_sk != -1)
-                                close(SS.passive_sk);
+                                closesocket(SS.passive_sk);
                         exit(EXIT_SUCCESS);
                         break;
 

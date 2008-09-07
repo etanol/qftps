@@ -18,7 +18,9 @@
  */
 
 #include "uftps.h"
-#include <arpa/inet.h>
+#ifndef __MINGW32__
+#  include <arpa/inet.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
@@ -29,13 +31,13 @@
  *
  * The argument has the syntax "h1,h2,h3,h4,p1,p2".  First, we need to split IP
  * and port information "h1.h2.h3.h4\0p1,p2" (two strings).  The IP string is
- * finally parsed by inet_aton() into a 'struct in_addr' value.  Finally, the
- * port number is obtained as p1 * 256 + p2 and translated to network byte
- * ordering with htons().
+ * finally parsed by inet_addr() into a 'in_addr_t' value.  Finally, the port
+ * number is obtained as p1 * 256 + p2 and translated to network byte ordering
+ * with htons().
  */
 void parse_port_argument (void)
 {
-        int                 commas, port, i, j, e;
+        int                 commas, port, i, j;
         struct sockaddr_in  sai;
 
         if (SS.arg == NULL)
@@ -67,8 +69,8 @@ void parse_port_argument (void)
         SS.arg[i - 1] = '\0';
 
         /* "h1.h2.h3.h4" ==> struct in_addr */
-        e = inet_aton(SS.arg, &sai.sin_addr);
-        if (e == 0)
+        sai.sin_addr.s_addr = inet_addr(SS.arg);
+        if (sai.sin_addr.s_addr == INADDR_NONE)
         {
                 error("PORT Translating IP '%s'", SS.arg);
                 reply_c("501 Invalid PORT parameter.\r\n");

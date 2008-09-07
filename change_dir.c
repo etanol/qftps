@@ -18,7 +18,11 @@
  */
 
 #include "uftps.h"
-#include <sys/stat.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <sys/stat.h>
+#endif
 #include <string.h>
 
 

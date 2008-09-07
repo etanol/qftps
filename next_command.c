@@ -18,8 +18,12 @@
  */
 
 #include "uftps.h"
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <unistd.h>
+#endif
 #include <errno.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -70,7 +74,7 @@ static void read_request (void)
                         else
                         {
                                 notice("Peer closed control connection");
-                                close(SS.control_sk);
+                                closesocket(SS.control_sk);
                                 exit(EXIT_SUCCESS);
                         }
                 }

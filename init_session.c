@@ -18,7 +18,9 @@
  */
 
 #include "uftps.h"
-#include <arpa/inet.h>
+#ifndef __MINGW32__
+#  include <arpa/inet.h>
+#endif
 
 
 /*

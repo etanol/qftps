@@ -32,7 +32,10 @@ void send_file (void)
 {
         int    f;
         long   e;
-        off_t  size;
+        off_t  size, completed;
+
+        completed      = SS.file_offset;
+        SS.file_offset = 0;
 
         f = open_file(&size);
         if (f == -1)
@@ -45,28 +48,26 @@ void send_file (void)
                 return;
         }
 
-        debug("Initial offset is %lld", (long long) SS.file_offset);
         reply_c("150 Sending file content.\r\n");
 
         /* Main transfer loop */
-        while (SS.file_offset < size && e != -1)
+        while (completed < size && e != -1)
         {
-                e = splice(f, &SS.file_offset, SS.data_sk, NULL, INT_MAX,
+                debug("Offset is %lld", (long long) completed);
+                e = splice(f, &completed, SS.data_sk, NULL, INT_MAX,
                            SPLICE_F_MOVE);
-                debug("Offset after %lld", (long long) SS.file_offset);
         }
 
         if (e != -1)
                 reply_c("226 File content sent.\r\n");
         else
         {
-                error("Sending file %s", SS.aux);
+                error("Sending file %s", SS.arg);
                 reply_c("426 Connection closed, transfer aborted.\r\n");
         }
 
         close(f);
-        close(SS.data_sk);
-        SS.data_sk     = -1;
-        SS.file_offset = 0;
+        closesocket(SS.data_sk);
+        SS.data_sk = -1;
 }
 

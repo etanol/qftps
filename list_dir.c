@@ -18,12 +18,17 @@
  */
 
 #include "uftps.h"
-#include <sys/stat.h>
-#include <unistd.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <sys/stat.h>
+#  include <unistd.h>
+#  include <time.h>
+#endif
 #include <dirent.h>
-#include <time.h>
 #include <string.h>
 #include <stdio.h>
+
 
 /* Month names */
 static const char const month[12][4] = {
@@ -71,7 +76,7 @@ void list_dir (int full_list)
         DIR            *dir;
         struct dirent  *dentry;
         struct stat     s;
-        struct tm       t;
+        struct tm      *t;
         char            item[512];
 
         /* Workaround for Konqueror and Nautilus */
@@ -130,13 +135,19 @@ void list_dir (int full_list)
                 if (full_list)
                 {
                         /* LIST */
-                        gmtime_r(&(s.st_mtime), &t);
+                        t = gmtime(&s.st_mtime);
+                        if (t == NULL)
+                        {
+                                error("Converting time of %s", SS.arg);
+                                continue;
+                        }
+
                         l = snprintf(item, 512,
                                      "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
                                      (S_ISDIR(s.st_mode) ? "dr-xr-xr-x"
                                       : "-r--r--r--"), (long long) s.st_size,
-                                     month[t.tm_mon], t.tm_mday, t.tm_year + 1900,
-                                     dentry->d_name);
+                                     month[t->tm_mon], t->tm_mday,
+                                     t->tm_year + 1900, dentry->d_name);
                 }
                 else
                 {
@@ -154,7 +165,7 @@ void list_dir (int full_list)
                 reply_c("426 Connection closed, transfer aborted.\r\n");
 
         closedir(dir);
-        close(SS.data_sk);
+        closesocket(SS.data_sk);
         SS.data_sk = -1;
 }
 

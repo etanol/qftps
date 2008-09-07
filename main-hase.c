@@ -18,36 +18,62 @@
  */
 
 #include "uftps.h"
-#include <sys/wait.h>
-#include <signal.h>
-#include <unistd.h>
+#include <windows.h>
+#include <process.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 struct _SessionScope  SS;  /* SS --> Session State*/
+static char          *Program_Name;
 
 
-/*
- * clid_finish
- *
- * Reaper function.  For "zombies".
- */
-static void child_finish (int sig)
+static unsigned __stdcall create_child_process (void *x)
 {
-        while (waitpid(-1, NULL, WNOHANG) > 0)
-                debug("Collecting children");
-}
+        int                  dup_sk, sk = (int) x;
+        STARTUPINFO          si;
+        PROCESS_INFORMATION  pi;
+        char                 argbuf[16];
+
+        memset(&si, 0, sizeof(si));
+
+        debug("In monitor thread");
+        // Duplicate the socket OrigSock to create an inheritable copy.
+        if (!DuplicateHandle(GetCurrentProcess(), (HANDLE)    sk,
+                             GetCurrentProcess(), (HANDLE *) &dup_sk, 0, TRUE,
+                             DUPLICATE_SAME_ACCESS))
+        {
+                error("Duplicating handle %d", sk);
+                return 1;
+        }
+
+        // Spawn the child process.
+        // The first command line argument (argv[1]) is the socket handle.
+
+        snprintf(argbuf, 16, "@ %d", dup_sk);
+        debug("Socket %d duplicated to %d", sk, dup_sk);
+
+        if (!CreateProcess(Program_Name, argbuf, NULL, NULL, TRUE, 0, NULL,
+                           NULL, &si, &pi))
+        {
+                error("Creating child process");
+                return 1;
+        }
 
 
-/*
- * end
- *
- * End. What where you expecting?
- */
-static void end (int sig)
-{
-        notice("Signal caught, exiting");
-        exit(EXIT_SUCCESS);
+        // The duplicated socket handle must be closed by the owner
+        // process--the parent. Otherwise, socket handle leakage
+        // occurs. On the other hand, closing the handle prematurely
+        // would make the duplicated handle invalid in the child. In this
+        // sample, we use WaitForSingleObject(pi.hProcess, INFINITE) to
+        // wait for the child.
+        debug("And waiting for process to terminate");
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        closesocket(sk);
+        closesocket(dup_sk);
+        debug("Child done, finishing monitor thread");
+
+        return 0;
 }
 
 
@@ -60,26 +86,33 @@ int main (int argc, char **argv)
 {
         int                 bind_sk, cmd_sk, e, yes;
         int                 port = DEFAULT_PORT;
-        struct sigaction    my_sa;
+        unsigned            th;
+        unsigned long       thread_handle;
         struct sockaddr_in  sai;
         socklen_t           sai_len = sizeof(struct sockaddr_in);
+        WSADATA             wd;
 
+        if (WSAStartup(MAKEWORD(2, 2), &wd))
+                fatal("Starting WinSock");
+        atexit((void (*)()) WSACleanup);
+
+        /* Am I a child? */
+        if (argv[0][0] == '@' && argv[0][1] == '\0' && argc > 1)
+        {
+                cmd_sk = atoi(argv[1]);
+                debug("Inherited socket is %d", cmd_sk);
+                init_session(cmd_sk);
+                command_loop();
+        }
+        Program_Name = argv[0];
+
+        /* Then I must be the server */
         if (argc > 1)
         {
                 port = atoi(argv[1]) & 0x00FFFF;
                 if (port <= 1024)
                         fatal("This port number is restricted");
         }
-
-        /* Signal handling */
-        sigfillset(&my_sa.sa_mask);
-        my_sa.sa_flags   = SA_RESTART;
-        my_sa.sa_handler = child_finish;
-        sigaction(SIGCHLD, &my_sa, NULL);
-
-        my_sa.sa_flags   = SA_NOMASK;
-        my_sa.sa_handler = end;
-        sigaction(SIGINT, &my_sa, NULL);
 
         /* Connection handling */
         sai.sin_family      = AF_INET;
@@ -91,7 +124,8 @@ int main (int argc, char **argv)
                 fatal("Creating main server socket");
 
         yes = 1;
-        setsockopt(bind_sk, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+        setsockopt(bind_sk, SOL_SOCKET, SO_REUSEADDR, (const char *) &yes,
+                   sizeof(yes));
         e = bind(bind_sk, (struct sockaddr *) &sai, sai_len);
         if (e == -1)
                 fatal("Binding main server socket");
@@ -114,21 +148,10 @@ int main (int argc, char **argv)
                         continue;
                 }
 
-                e = fork();
-                if (e == 0)
-                {
-                        /***  CHILD  ***/
-                        close(bind_sk);
-                        init_session(cmd_sk);
-                        command_loop();
-                }
-                else
-                {
-                        /***  PARENT  ***/
-                        if (e == -1)
-                                error("Could not create a child process");
-                        close(cmd_sk);
-                }
+                thread_handle = _beginthreadex(NULL, 0, create_child_process,
+                                               (void *) cmd_sk, 0, &th);
+                if (thread_handle == 0)
+                        error("Launching monitor thread");
         } while (1);
 
         return EXIT_SUCCESS;

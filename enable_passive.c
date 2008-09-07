@@ -18,8 +18,12 @@
  */
 
 #include "uftps.h"
-#include <arpa/inet.h>
-#include <unistd.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <arpa/inet.h>
+#  include <unistd.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 
@@ -39,7 +43,7 @@ void enable_passive (void)
         /* Safety check in case there was some error before */
         if (SS.passive_sk != -1)
         {
-                close(SS.passive_sk);
+                closesocket(SS.passive_sk);
                 SS.passive_sk = -1;
                 SS.mode       = DEFAULT_MODE;
         }
@@ -51,7 +55,7 @@ void enable_passive (void)
                 goto out_error;
         }
         e = 1;
-        setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, &e, sizeof(int));
+        setsockopt(bsk, SOL_SOCKET, SO_REUSEADDR, CCP_CAST &e, sizeof(int));
 
         /* In case there are various network interfaces, bind only to the one
          * the client is connected to; and use port 0 to let the system choose
@@ -94,7 +98,7 @@ void enable_passive (void)
         return;
 
 out_error:
-        close(bsk);  /* bsk could be -1; never mind, only produces EBADF */
+        closesocket(bsk); /* bsk could be -1; never mind, only produces EBADF */
         reply_c("425 No way to open a port.\r\n");
 }
 

@@ -18,9 +18,13 @@
  */
 
 #include "uftps.h"
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <unistd.h>
+#endif
 #include <stdarg.h>
 #include <errno.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
