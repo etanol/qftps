@@ -25,11 +25,16 @@
 #define _LARGEFILE64_SOURCE
 
 /*
- * Early multiplaform support (more details on hase.h).
+ * Hasefroch requirements.  No need to inclose within "#ifdef" as no other
+ * system cares about these definitions.
  */
-#define WINVER 0x0501
+#define WINVER              0x0501
+#define __MSVCRT_VERSION__  0x0601
 #define _NO_OLDNAMES
 
+/*
+ * Early multiplaform support (more details on hase.h).
+ */
 #include <sys/types.h>
 #ifdef __MINGW32__
 #  include <winsock2.h>

@@ -6,12 +6,13 @@
 
 RETR ?= generic
 
-CC          ?= gcc
-HCC         := i586-mingw32msvc-gcc -D__MSVCRT_VERSION__=0x0601
+HCC         := i586-mingw32msvc-gcc
 CFLAGS      := -O2 -Wall -pipe -fomit-frame-pointer
 CFLAGS_DBG  := -O0 -Wall -pipe -g -pg -DDEBUG
 LDFLAGS     := -Wall -pipe -Wl,-s,-O1
 LDFLAGS_DBG := -Wall -pipe -g -pg
+#LDFLAGS     := -lsocket -lnsl
+#LDFLAGS_DBG := -lsocket -lnsl -g -pg
 
 SOURCES := change_dir.c command_loop.c enable_passive.c expand_arg.c \
            file_stats.c init_session.c list_dir.c log.c next_command.c \
