@@ -21,6 +21,7 @@
 #ifdef __MINGW32__
 #  include "hase.h"
 #else
+#  include <sys/socket.h>
 #  include <unistd.h>
 #endif
 #include <errno.h>

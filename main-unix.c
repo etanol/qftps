@@ -18,6 +18,7 @@
  */
 
 #include "uftps.h"
+#include <sys/socket.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
@@ -79,7 +80,8 @@ int main (int argc, char **argv)
         my_sa.sa_handler = child_finish;
         sigaction(SIGCHLD, &my_sa, NULL);
 
-        my_sa.sa_flags   = SA_NOMASK;
+        sigemptyset(&my_sa.sa_mask);
+        my_sa.sa_flags   = 0;
         my_sa.sa_handler = end;
         sigaction(SIGINT,  &my_sa, NULL);
         sigaction(SIGTERM, &my_sa, NULL);

@@ -44,7 +44,7 @@ static void message (      int      show_error,
 
         error_code = errno;
 
-        printf("(%5d) [%-7s] ", getpid(), severity);
+        printf("(%5d) [%-7s] ", (int) getpid(), severity);
         vprintf(msg, args);
 
         if (show_error && error_code != 0)

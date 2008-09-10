@@ -19,10 +19,16 @@
 
 #include "uftps.h"
 #ifndef __MINGW32__
+#  include <sys/socket.h>
 #  include <arpa/inet.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
+
+/* This is needed by Solaris */
+#ifndef INADDR_NONE
+#  define INADDR_NONE  -1
+#endif
 
 
 /*

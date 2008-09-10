@@ -18,6 +18,9 @@
  */
 
 #include "uftps.h"
+#ifndef __MINGW32__
+#  include <sys/socket.h>
+#endif
 
 
 /*
