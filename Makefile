@@ -94,10 +94,10 @@ command_parser.h: command_parser.gperf
 #
 
 clean:
-	@-rm -fv *.o *.obj gmon.out
+	@-rm -fv *.o *.obj gmon.out uftps uftps.dbg uftps.exe uftps.dbg.exe
 
 distclean: clean
-	@-rm -fv uftps uftps.dbg uftps.exe uftps.dbg.exe command_parser.h
+	@-rm -fv command_parser.h
 
 help:
 	@echo 'User targets:'
@@ -106,8 +106,8 @@ help:
 	@echo '	debug     - Build the UNIX binary with debugging support.'
 	@echo '	hase      - Build the Hasefroch binary.'
 	@echo '	dhase     - Build the Hasefroch binary with debugging support.'
-	@echo '	clean     - Clean object files.'
-	@echo '	distclean - Clean binaries and the command parser (clean implied).'
+	@echo '	clean     - Clean object and binary files.'
+	@echo '	distclean - Clean the command parser (clean implied).'
 	@echo ''
 	@echo 'You can also choose which RETR implementation to use by setting the'
 	@echo 'RETR make variable to one of these values:'
