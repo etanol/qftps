@@ -62,7 +62,11 @@ void send_file (void)
         }
 
         reply_c("150 Sending file content.\r\n");
+#ifdef __MINGW32__
+        debug("Initial offset is %I64d", completed);
+#else
         debug("Initial offset is %lld", (long long) completed);
+#endif
 
         /*
          * Main transfer loop.  We use the auxiliary buffer to temporarily store
