@@ -59,6 +59,19 @@ void change_dir (void)
         }
         else
         {
+#ifdef __MINGW32__
+                /*
+                 * Because we converted "./" to "." in expand_arg.c (Hasefroch
+                 * idiot), now we must take care in reverting the change or we
+                 * will brake future CWD and PWD responses.
+                 */
+                if (l == 2)
+                {
+                        SS.arg[l - 1] = '/';
+                        SS.arg[l]     = '\0';
+                        l++;
+                }
+#endif
                 memcpy(SS.cwd, SS.arg, l);
                 SS.cwd_len = l;
                 debug("Directory changed to %s", SS.cwd);

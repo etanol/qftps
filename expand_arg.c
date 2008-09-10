@@ -122,6 +122,18 @@ int expand_arg (void)
                         reply_c("552 Path overflow.\r\n");
                         fatal("Path overflow expanding argument");
                 }
+
+#ifdef __MINGW32__
+                /*
+                 * Hasefroch is so stupid that does not accept "./" as directory
+                 * path.  Instead, we have to convert that to ".".
+                 */
+                if (len == 3)
+                {
+                        len--;
+                        SS.aux[len - 1] = '\0';
+                }
+#endif
         }
 
         SS.arg = SS.aux;
