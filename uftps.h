@@ -18,22 +18,22 @@
  */
 
 /*
- * Common definitions.
+ * Large file support.
  */
-
-/* Large file support */
 #define _FILE_OFFSET_BITS   64
 #define _LARGEFILE_SOURCE
 #define _LARGEFILE64_SOURCE
 
-/* Early multiplaform support */
+/*
+ * Early multiplaform support (more details on hase.h).
+ */
 #define WINVER 0x0501
 #define _NO_OLDNAMES
 
 #include <sys/types.h>
 #ifdef __MINGW32__
 #  include <winsock2.h>
-   typedef _off_t off_t;
+   typedef __int64 off_t;
    typedef int socklen_t;
 #  define CCP_CAST  (const char *)
 #else
@@ -42,16 +42,22 @@
 #  define CCP_CAST
 #endif
 
-/* Attributes help to catch silly mistakes, but they are not always available */
+/*
+ * Attributes help to catch silly mistakes, but they are not always available.
+ */
 #if !defined(__GNUC__) && !defined(__MINGW32__)
 #  define __attribute__(x)
 #endif
 
-/* Constants */
+/*
+ * Constants.
+ */
 #define DEFAULT_PORT 2211
 #define LINE_SIZE    4096  /* Same value as PATH_MAX */
 
-/* Recognized commands */
+/*
+ * Recognized commands.
+ */
 enum command
 {
         FTP_NONE = 0,
@@ -63,7 +69,9 @@ enum command
         FTP_TYPE, FTP_USER
 };
 
-/* Data channel modes */
+/*
+ * Data channel modes.
+ */
 enum data_mode
 {
         DEFAULT_MODE,  /* RFC default, unimplemented/unsupported */
@@ -71,7 +79,9 @@ enum data_mode
         PASSIVE_MODE   /* Passive mode enabled with PASV requests */
 };
 
-/* Session (client) state */
+/*
+ * Session (client) state.
+ */
 struct _SessionScope
 {
         /* Sockets */

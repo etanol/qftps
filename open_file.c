@@ -54,6 +54,8 @@ int open_file (off_t *file_size)
         {
                 if (e == -1)
                         error("Stating file %s", SS.arg);
+                else
+                        warning("%s is not a regular file", SS.arg);
                 reply_c("550 Not a file.\r\n");
                 return -1;
         }

@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -52,9 +53,7 @@ static void end (int sig)
 
 
 /*
- * Main program.  Opens the command port until a client requests a connection.
- * Then the server is forked and the child will manage all that client's
- * requests.
+ * Main program.
  */
 int main (int argc, char **argv)
 {
@@ -68,7 +67,10 @@ int main (int argc, char **argv)
         {
                 port = atoi(argv[1]) & 0x00FFFF;
                 if (port <= 1024)
-                        fatal("This port number is restricted");
+                {
+                        errno = 0;
+                        fatal("Invalid port number");
+                }
         }
 
         /* Signal handling */
@@ -79,9 +81,10 @@ int main (int argc, char **argv)
 
         my_sa.sa_flags   = SA_NOMASK;
         my_sa.sa_handler = end;
-        sigaction(SIGINT, &my_sa, NULL);
+        sigaction(SIGINT,  &my_sa, NULL);
+        sigaction(SIGTERM, &my_sa, NULL);
 
-        /* Connection handling */
+        /* Connection handling, preparing to serve */
         sai.sin_family      = AF_INET;
         sai.sin_port        = htons(port);
         sai.sin_addr.s_addr = INADDR_ANY;

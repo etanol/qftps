@@ -76,8 +76,12 @@ void file_stats (int type)
                 break;
 
         case 1: /* SIZE */
+#ifdef __MINGW32__
+                l = snprintf(SS.aux, LINE_SIZE, "213 %I64d\r\n", s.st_size);
+#else
                 l = snprintf(SS.aux, LINE_SIZE, "213 %lld\r\n",
                              (long long) s.st_size);
+#endif
         }
 
         reply(SS.aux, l);

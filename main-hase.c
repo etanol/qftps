@@ -28,6 +28,18 @@ struct _SessionScope  SS;  /* SS --> Session State*/
 static char          *Program_Name;
 
 
+/*
+ * Create a child process to attend the recently connected client.  As a
+ * parameter, the socket descriptor of such connection is given.
+ *
+ * This function blocks, so is executed in its own thread to keep accepting new
+ * incoming client connections.  This fact also forces the function prototype.
+ *
+ * The code here has been shamelessly taken and adapted from the Hasefroch
+ * support page:
+ *
+ *   http://support.microsoft.com/default.aspx?scid=kb;en-us;150523
+ */
 static unsigned __stdcall create_child_process (void *x)
 {
         int                  dup_sk, sk = (int) x;
@@ -36,23 +48,25 @@ static unsigned __stdcall create_child_process (void *x)
         char                 argbuf[16];
 
         memset(&si, 0, sizeof(si));
-
         debug("In monitor thread");
-        // Duplicate the socket OrigSock to create an inheritable copy.
-        if (!DuplicateHandle(GetCurrentProcess(), (HANDLE)    sk,
-                             GetCurrentProcess(), (HANDLE *) &dup_sk, 0, TRUE,
-                             DUPLICATE_SAME_ACCESS))
+
+        /*
+         * Duplicate the socket descriptor to create an inheritable copy.
+         */
+        if (!DuplicateHandle(GetCurrentProcess(), (HANDLE) sk,
+                             GetCurrentProcess(), (LPHANDLE) (HANDLE_PTR) &dup_sk,
+                             0, TRUE, DUPLICATE_SAME_ACCESS))
         {
                 error("Duplicating handle %d", sk);
                 return 1;
         }
-
-        // Spawn the child process.
-        // The first command line argument (argv[1]) is the socket handle.
-
-        snprintf(argbuf, 16, "@ %d", dup_sk);
         debug("Socket %d duplicated to %d", sk, dup_sk);
 
+        /*
+         * Spawn the child process providing the inheritable socket descriptor
+         * as a command line argument.
+         */
+        snprintf(argbuf, 16, "@ %d", dup_sk);
         if (!CreateProcess(Program_Name, argbuf, NULL, NULL, TRUE, 0, NULL,
                            NULL, &si, &pi))
         {
@@ -60,13 +74,20 @@ static unsigned __stdcall create_child_process (void *x)
                 return 1;
         }
 
-
-        // The duplicated socket handle must be closed by the owner
-        // process--the parent. Otherwise, socket handle leakage
-        // occurs. On the other hand, closing the handle prematurely
-        // would make the duplicated handle invalid in the child. In this
-        // sample, we use WaitForSingleObject(pi.hProcess, INFINITE) to
-        // wait for the child.
+        /*
+         * Now the child process can use the given socket descriptor directly.
+         * But the parent process cannot close the original socket or something
+         * weird may occur.
+         *
+         * However, we neither can forget about these to socket descriptors or
+         * leakage will pay back in the long run.  Therefore, we need to wait
+         * for the child process to finish before closing the descriptors.
+         *
+         * Because this operation would block the parent process (preventing
+         * new clients from connecting), we need to perform it in a different
+         * thread.  That's why each client connected generates a thread in the
+         * parent process to monitor the child process that does all the work.
+         */
         debug("And waiting for process to terminate");
         WaitForSingleObject(pi.hProcess, INFINITE);
         closesocket(sk);
@@ -78,9 +99,7 @@ static unsigned __stdcall create_child_process (void *x)
 
 
 /*
- * Main program.  Opens the command port until a client requests a connection.
- * Then the server is forked and the child will manage all that client's
- * requests.
+ * Main program.
  */
 int main (int argc, char **argv)
 {
@@ -111,10 +130,14 @@ int main (int argc, char **argv)
         {
                 port = atoi(argv[1]) & 0x00FFFF;
                 if (port <= 1024)
-                        fatal("This port number is restricted");
+                {
+                        errno = 0;
+                        fatal("Invalid port number");
+                }
         }
 
-        /* Connection handling */
+        /* Preparing to serve */
+        memset(&sai, 0, sizeof(struct sockaddr_in));
         sai.sin_family      = AF_INET;
         sai.sin_port        = htons(port);
         sai.sin_addr.s_addr = INADDR_ANY;
@@ -125,7 +148,7 @@ int main (int argc, char **argv)
 
         yes = 1;
         setsockopt(bind_sk, SOL_SOCKET, SO_REUSEADDR, (const char *) &yes,
-                   sizeof(yes));
+                   sizeof(int));
         e = bind(bind_sk, (struct sockaddr *) &sai, sai_len);
         if (e == -1)
                 fatal("Binding main server socket");
@@ -148,6 +171,7 @@ int main (int argc, char **argv)
                         continue;
                 }
 
+                /* Create a monitor thread for the client (read more above) */
                 thread_handle = _beginthreadex(NULL, 0, create_child_process,
                                                (void *) cmd_sk, 0, &th);
                 if (thread_handle == 0)

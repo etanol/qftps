@@ -61,7 +61,7 @@ void enable_passive (void)
          * the client is connected to; and use port 0 to let the system choose
          * one for us */
         sai_len = sizeof(struct sockaddr_in);
-        memcpy(&sai, &SS.local_address, sizeof(struct sockaddr_in));
+        memcpy(&sai, &SS.local_address, sai_len);
         sai.sin_port = 0;
         e = bind(bsk, (struct sockaddr *) &sai, sai_len);
         if (e == -1)

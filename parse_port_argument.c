@@ -79,7 +79,7 @@ void parse_port_argument (void)
         /* Check if destination IP is the same as the client's */
         if (sai.sin_addr.s_addr != SS.client_address.sin_addr.s_addr)
         {
-                error("PORT IP %s is not the same as the client's", SS.arg);
+                warning("PORT IP %s is not the same as the client's", SS.arg);
                 reply_c("501 Invalid PORT parameter.\r\n");
                 return;
         }

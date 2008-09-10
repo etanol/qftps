@@ -31,7 +31,7 @@
  */
 void send_file (void)
 {
-        int    f, b, e;
+        int    f, e, b = 0;
         off_t  size, completed = 0;
 
         f = open_file(&size);

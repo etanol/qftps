@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdio.h>
 
-
 /* Month names */
 static const char const month[12][4] = {
         "Jan\0", "Feb\0", "Mar\0", "Apr\0", "May\0", "Jun\0", "Jul\0", "Aug\0",
@@ -124,7 +123,6 @@ void list_dir (int full_list)
                         fatal("Path overflow in LIST/NLST");
                 strcpy(&SS.arg[len - 1], dentry->d_name);
 
-                debug("Stating %s", SS.arg);
                 e = lstat(SS.arg, &s);
                 if (e == -1 || (!S_ISDIR(s.st_mode) && !S_ISREG(s.st_mode)))
                 {
