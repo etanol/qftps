@@ -115,7 +115,8 @@ int main (int argc, char **argv)
                 cmd_sk  = accept(bind_sk, (struct sockaddr *) &sai, &sai_len);
                 if (cmd_sk == -1)
                 {
-                        error("Accepting incoming connection");
+                        if (errno != EINTR)
+                                error("Accepting incoming connection");
                         continue;
                 }
 
