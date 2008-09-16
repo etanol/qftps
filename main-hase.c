@@ -111,6 +111,8 @@ int main (int argc, char **argv)
         socklen_t           sai_len = sizeof(struct sockaddr_in);
         WSADATA             wd;
 
+        SS.pid = (int) _getpid();
+
         if (WSAStartup(MAKEWORD(2, 2), &wd))
                 fatal("Starting WinSock");
         atexit((void (*)()) WSACleanup);

@@ -18,9 +18,12 @@
  */
 
 #include "uftps.h"
-#ifndef __MINGW32__
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
 #  include <sys/socket.h>
 #  include <arpa/inet.h>
+#  include <unistd.h>
 #endif
 
 
@@ -33,6 +36,7 @@ void init_session (int control_sk)
         socklen_t  sai_len;
 
         /* Basic initializations */
+        SS.pid          = (int) getpid();
         SS.control_sk   = control_sk;
         SS.passive_sk   = -1;
         SS.data_sk      = -1;

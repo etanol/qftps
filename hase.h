@@ -42,9 +42,9 @@
 
 
 /*
- * File stat wrappers, with large file support.  Structures, fields and macros
- * and functions.  Hasefroch does not have symbolic links, so we do not care
- * about them.
+ * File stat wrappers, with large file support.  Structures, fields, macros and
+ * functions.  Hasefroch does not have symbolic links, so we do not care about
+ * them.
  */
 struct stat
 {

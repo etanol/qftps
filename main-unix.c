@@ -64,6 +64,8 @@ int main (int argc, char **argv)
         struct sockaddr_in  sai;
         socklen_t           sai_len = sizeof(struct sockaddr_in);
 
+        SS.pid = (int) getpid();
+
         if (argc > 1)
         {
                 port = atoi(argv[1]) & 0x00FFFF;

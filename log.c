@@ -44,7 +44,11 @@ static void message (      int      show_error,
 
         error_code = errno;
 
-        printf("(%5d) [%-7s] ", (int) getpid(), severity);
+        /*
+         * The value in SS.pid prevents calling getpid() for each message,
+         * saving the expense of a system call.
+         */
+        printf("(%5d) [%-7s] ", SS.pid, severity);
         vprintf(msg, args);
 
         if (show_error && error_code != 0)

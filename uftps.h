@@ -100,6 +100,7 @@ struct _SessionScope
         int  cwd_len;       /* Length of current working directory */
 
         /* Misc state information */
+        int             pid;          /* Cached Process ID */
         enum data_mode  mode;         /* Current data channel mode */
         off_t           file_offset;  /* Last REST offset accepted */
         char           *arg;          /* Pointer to comand line argument */
