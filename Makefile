@@ -95,10 +95,10 @@ command_parser.h: command_parser.gperf
 #
 
 clean:
-	@-rm -fv *.o *.obj gmon.out uftps uftps.dbg uftps.exe uftps.dbg.exe
+	@-rm -f *.o *.obj gmon.out uftps uftps.dbg uftps.exe uftps.dbg.exe
 
 distclean: clean
-	@-rm -fv command_parser.h
+	@-rm -f command_parser.h
 
 help:
 	@echo 'User targets:'
