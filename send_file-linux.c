@@ -30,7 +30,7 @@
  */
 void send_file (void)
 {
-        int    f, l, e;
+        int    f, e;
         off_t  size, completed;
 
         completed      = SS.file_offset;
