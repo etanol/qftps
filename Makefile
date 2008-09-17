@@ -6,21 +6,51 @@
 
 RETR ?= generic
 
+
+#
+# Compilation flags, GCC by default
+#
+
 HCC         := i586-mingw32msvc-gcc
-CFLAGS      := -O2 -Wall -pipe -fomit-frame-pointer
-CFLAGS_DBG  := -O0 -Wall -pipe -g -pg -DDEBUG
-LDFLAGS     := -Wall -pipe -Wl,-s,-O1
-LDFLAGS_DBG := -Wall -pipe -g -pg
-#LDFLAGS     := -lsocket -lnsl
-#LDFLAGS_DBG := -lsocket -lnsl -g -pg
+CC          := gcc
+CFLAGS      := -Wall -pipe -O3 -fomit-frame-pointer
+LDFLAGS     := -Wall -pipe -Wl,-s
+CFLAGS_DBG  := -Wall -pipe -g -DDEBUG
+LDFLAGS_DBG := -Wall -pipe -g
 
-SOURCES := change_dir.c command_loop.c enable_passive.c expand_arg.c \
-           file_stats.c init_session.c list_dir.c log.c next_command.c \
-           open_data_channel.c open_file.c parse_port_argument.c reply.c \
-           send_file-$(RETR).c
 
-SOURCES_unix := $(SOURCES) main-unix.c
-SOURCES_hase := $(SOURCES) main-hase.c
+#
+# Solaris specific configuration, not using GCC
+#
+
+ifeq ($(shell uname),SunOS)
+	CC          := cc
+	CFLAGS      := -xO3
+	LDFLAGS     := -s
+	CFLAGS_DBG  := -g -DDEBUG
+	LDFLAGS_DBG := -g
+	LIBS        := -lsocket -lnsl
+endif
+
+
+#
+# Source files, except for main
+#
+
+SOURCES := change_dir.c
+SOURCES += command_loop.c
+SOURCES += enable_passive.c
+SOURCES += expand_arg.c
+SOURCES += file_stats.c
+SOURCES += init_session.c
+SOURCES += list_dir.c
+SOURCES += log.c
+SOURCES += next_command.c
+SOURCES += open_data_channel.c
+SOURCES += open_file.c
+SOURCES += parse_port_argument.c
+SOURCES += reply.c
+SOURCES += send_file-$(RETR).c
 
 
 #
@@ -39,16 +69,16 @@ dhase: uftps.dbg.exe
 # Binaries (release and debug)
 #
 
-uftps: $(SOURCES_unix:.c=.o)
-	@echo ' Linking           $@' && $(CC) $(LDFLAGS) -o $@ $^
+uftps: $(SOURCES:.c=.o) main-unix.o
+	@echo ' Linking           $@' && $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
-uftps.dbg: $(SOURCES_unix:.c=.dbg.o)
-	@echo ' Linking   [debug] $@' && $(CC) $(LDFLAGS_DBG) -o $@ $^
+uftps.dbg: $(SOURCES:.c=.dbg.o) main-unix.dbg.o
+	@echo ' Linking   [debug] $@' && $(CC) $(LDFLAGS_DBG) -o $@ $^ $(LIBS)
 
-uftps.exe: $(SOURCES_hase:.c=.obj)
+uftps.exe: $(SOURCES:.c=.obj) main-hase.obj
 	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^ -lws2_32
 
-uftps.dbg.exe: $(SOURCES_hase:.c=.dbg.obj)
+uftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
 	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ -lws2_32
 
 
@@ -95,10 +125,11 @@ command_parser.h: command_parser.gperf
 #
 
 clean:
-	@-rm -f *.o *.obj gmon.out uftps uftps.dbg uftps.exe uftps.dbg.exe
+	-rm -f *.o *.obj
+	-rm -f uftps uftps.dbg uftps.exe uftps.dbg.exe
 
 distclean: clean
-	@-rm -f command_parser.h
+	-rm -f command_parser.h
 
 help:
 	@echo 'User targets:'
