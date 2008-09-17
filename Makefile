@@ -57,7 +57,7 @@ SOURCES += send_file-$(RETR).c
 # Phony targets and aliases
 #
 
-.PHONY: all debug clean distclean help
+.PHONY: all debug clean distclean dist help
 
 all  : uftps
 debug: uftps.dbg
@@ -118,6 +118,19 @@ next_command.dbg.obj: command_parser.h
 
 command_parser.h: command_parser.gperf
 	@echo ' Generating        $@' && gperf --output-file=$@ $<
+
+
+#
+# Distributing source code (run only from repository checkouts)
+#
+
+dist:
+	@v=`hg id -t | head -1` ; \
+	{ test -z "$$v" || test "$$v" = 'tip' ; } && v=`hg id -i | head -1` ; \
+	hg archive -X .hgtags uftps-$$v ; \
+	$(MAKE) -C uftps-$$v command_parser.h ; \
+	tar cvf - uftps-$$v | gzip -vfc9 >uftps-$$v.tar.gz ; \
+	rm -rf uftps-$$v
 
 
 #
