@@ -32,19 +32,19 @@
 void send_file (void)
 {
         int    f, e, b = 0;
-        off_t  size, completed = 0;
+        off_t  size, completed;
+
+        completed      = SS.file_offset;
+        SS.file_offset = 0;
 
         f = open_file(&size);
         if (f == -1)
-        {
-                SS.file_offset = 0;
                 return;
-        }
 
         /* Apply a possible previous REST command */
-        if (SS.file_offset > 0)
+        if (completed > 0)
         {
-                completed = lseek(f, SS.file_offset, SEEK_SET);
+                completed = lseek(f, completed, SEEK_SET);
                 if (completed == -1)
                 {
                         error("Seeking file %s", SS.arg);

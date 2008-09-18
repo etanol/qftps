@@ -21,6 +21,10 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+/*
+ * Defining MAP_CHUNK_MEGS can control the maximum slice of file that can be
+ * mapped at a time
+ */
 #if !defined(MAP_CHUNK_MEGS) || MAP_CHUNK_MEGS < 16
 #  define MAP_CHUNK_MEGS  16
 #endif
@@ -28,6 +32,7 @@
 #define MAP_MAX_BYTES  (MAP_CHUNK_MEGS * 1024 * 1024)
 
 
+/* Cached values: system page size and some masks to extract bits */
 static off_t Page_Size;
 static off_t File_Mask;
 static off_t Page_Mask;
@@ -57,10 +62,7 @@ void send_file (void)
 
         f = open_file(&size);
         if (f == -1)
-        {
-                SS.file_offset = 0;
                 return;
-        }
 
         e = open_data_channel();
         if (e == -1)
@@ -75,6 +77,16 @@ void send_file (void)
         /* Main transfer loop */
         while (completed < size)
         {
+                /*
+                 * File can only be mapped from offsets that are multiples of
+                 * Page_Size.  Therefore, we need to step back a bit in the case
+                 * of misalignment.
+                 *
+                 * And, obviously, we need to take care of how much amount of
+                 * file we map; because we could run out of virtual memory.  So
+                 * we have a hard limit on how much file can be mapped at a
+                 * time.
+                 */
                 file_offset = completed & File_Mask;
                 page_offset = completed & Page_Mask;
                 map_bytes   = size - file_offset;
@@ -97,6 +109,11 @@ void send_file (void)
                 if (e == -1)
                         break;
 
+                /*
+                 * In the next iteration, "completed" will be properly aligned
+                 * to a page boundary; provided that 1 << 20 (one megabyte
+                 * offset) is aligned too.
+                 */
                 completed += map_bytes - page_offset;
         }
 
