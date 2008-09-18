@@ -111,13 +111,13 @@ void command_loop (void)
                 case FTP_REST:
                         /* We don't need str_to_ll() as sscanf() does de job */
 #ifdef __MINGW32__
-                        sscanf(SS.arg, "%I64d", (__int64 *) &SS.file_offset);
+                        sscanf(SS.arg, "%I64d", (__int64 *) &SS.rest_offset);
                         l = snprintf(SS.aux, LINE_SIZE, "350 Got it (%I64d).\r\n",
-                                     (__int64) SS.file_offset);
+                                     (__int64) SS.rest_offset);
 #else
-                        sscanf(SS.arg, "%lld", (long long *) &SS.file_offset);
+                        sscanf(SS.arg, "%lld", (long long *) &SS.rest_offset);
                         l = snprintf(SS.aux, LINE_SIZE, "350 Got it (%lld).\r\n",
-                                     (long long) SS.file_offset);
+                                     (long long) SS.rest_offset);
 #endif
                         reply(SS.aux, l);
                         break;

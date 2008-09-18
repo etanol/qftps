@@ -102,7 +102,7 @@ struct _SessionScope
         /* Misc state information */
         int             pid;          /* Cached Process ID */
         enum data_mode  mode;         /* Current data channel mode */
-        off_t           file_offset;  /* Last REST offset accepted */
+        off_t           rest_offset;  /* Last REST offset accepted */
         char           *arg;          /* Pointer to comand line argument */
 
         /* Session addresses */

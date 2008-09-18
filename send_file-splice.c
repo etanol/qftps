@@ -34,8 +34,8 @@ void send_file (void)
         long   e;
         off_t  size, completed;
 
-        completed      = SS.file_offset;
-        SS.file_offset = 0;
+        completed      = SS.rest_offset;
+        SS.rest_offset = 0;
 
         f = open_file(&size);
         if (f == -1)

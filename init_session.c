@@ -43,7 +43,7 @@ void init_session (int control_sk)
         SS.input_offset = 0;
         SS.input_len    = 0;
         SS.mode         = DEFAULT_MODE;
-        SS.file_offset  = 0;
+        SS.rest_offset  = 0;
         SS.arg          = NULL;
 
         /* Set CWD to root */
