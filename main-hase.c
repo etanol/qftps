@@ -43,6 +43,7 @@ static char          *Program_Name;
 static unsigned __stdcall create_child_process (void *x)
 {
         int                  dup_sk, sk = (int) x;
+        BOOL                 ok;
         STARTUPINFO          si;
         PROCESS_INFORMATION  pi;
         char                 argbuf[16];
@@ -53,9 +54,10 @@ static unsigned __stdcall create_child_process (void *x)
         /*
          * Duplicate the socket descriptor to create an inheritable copy.
          */
-        if (!DuplicateHandle(GetCurrentProcess(), (HANDLE) sk,
+        ok = DuplicateHandle(GetCurrentProcess(), (HANDLE) sk,
                              GetCurrentProcess(), (LPHANDLE) (HANDLE_PTR) &dup_sk,
-                             0, TRUE, DUPLICATE_SAME_ACCESS))
+                             0, TRUE, DUPLICATE_SAME_ACCESS);
+        if (!ok)
         {
                 error("Duplicating handle %d", sk);
                 return 1;
@@ -67,8 +69,9 @@ static unsigned __stdcall create_child_process (void *x)
          * as a command line argument.
          */
         snprintf(argbuf, 16, "@ %d", dup_sk);
-        if (!CreateProcess(Program_Name, argbuf, NULL, NULL, TRUE, 0, NULL,
-                           NULL, &si, &pi))
+        ok = CreateProcess(Program_Name, argbuf, NULL, NULL, TRUE, 0, NULL,
+                           NULL, &si, &pi);
+        if (!ok)
         {
                 error("Creating child process");
                 return 1;
