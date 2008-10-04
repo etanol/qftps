@@ -30,7 +30,7 @@
  */
 void send_file (void)
 {
-        int    f, e;
+        int    f, b, e;
         off_t  size, completed;
 
         completed      = SS.rest_offset;
@@ -48,12 +48,13 @@ void send_file (void)
         }
 
         reply_c("150 Sending file content.\r\n");
+        debug("Initial offset is %lld", (long long) completed);
 
         /* Main transfer loop */
         while (completed < size && e != -1)
         {
-                debug("Offset is %lld", (long long) completed);
-                e = sendfile(SS.data_sk, f, &completed, INT_MAX);
+                b = (size - completed > INT_MAX ? INT_MAX : size - completed);
+                e = sendfile(SS.data_sk, f, &completed, b);
         }
 
         if (e != -1)
