@@ -18,12 +18,16 @@
  */
 
 #include "uftps.h"
-#include <sys/mman.h>
-#include <unistd.h>
+#ifdef __MINGW32__
+#  include "hase.h"
+#else
+#  include <sys/mman.h>
+#  include <unistd.h>
+#endif
 
 /*
  * Defining MAP_CHUNK_MEGS can control the maximum slice of file that can be
- * mapped at a time
+ * mapped at a time.  Recommended values are powers of two below 512.
  */
 #if !defined(MAP_CHUNK_MEGS) || MAP_CHUNK_MEGS < 16
 #  define MAP_CHUNK_MEGS  16
@@ -33,14 +37,15 @@
 
 
 /* Cached values: system page size and some masks to extract bits */
-static off_t Page_Size;
-static off_t File_Mask;
-static off_t Page_Mask;
+static off_t Page_Size = 0;
+static off_t File_Mask = 0;
+static off_t Page_Mask = 0;
 
 
 /*
- * mmap() based RETR command implementation.  Only compilable on UNIX systems
- * where the mmap() system call is available.
+ * RETR implementation using file mappings to avoid some memory copies when
+ * reading from a file.  This version used to be UNIX specific, but recent
+ * Hasefroch support has been added.
  */
 void send_file (void)
 {
@@ -48,13 +53,25 @@ void send_file (void)
         void   *map;
         size_t  map_bytes;
         off_t   size, completed, file_offset, page_offset;
+#ifdef __MINGW32__
+        BOOL    ok;
+        HANDLE  fm;  /* File Mapping */
+#endif
 
         /* Retrieve page size if necessary, assuming a power of two value */
         if (Page_Size == 0)
         {
+#ifdef __MINGW32__
+                SYSTEM_INFO  si;
+
+                GetSystemInfo(&si);
+                Page_Size = si.dwPageSize;
+#else
                 Page_Size = sysconf(_SC_PAGESIZE);
+#endif
                 Page_Mask = Page_Size - 1;
                 File_Mask = ~Page_Mask;
+                debug("System page size is %d", (int) Page_Size);
         }
 
         completed      = SS.rest_offset;
@@ -63,6 +80,16 @@ void send_file (void)
         f = open_file(&size);
         if (f == -1)
                 return;
+
+#ifdef __MINGW32__
+        /*
+         * As always, in Hasefroch everyting is more complicated than necessary.
+         * So to map files two steps are necessary: first create a mapping
+         * object and then create a view, which is more like the UNIX mmap.
+         */
+        fm = CreateFileMapping((HANDLE) _get_osfhandle(f), NULL, PAGE_READONLY,
+                               0, 0, NULL);
+#endif
 
         e = open_data_channel();
         if (e == -1)
@@ -93,6 +120,12 @@ void send_file (void)
                 if (map_bytes > MAP_MAX_BYTES)
                         map_bytes = MAP_MAX_BYTES;
 
+#ifdef __MINGW32__
+                map = MapViewOfFile(fm, FILE_MAP_READ,
+                                    (completed >> 32) & 0x00FFFFFFFFLL,
+                                     completed        & 0x00FFFFFFFFLL,
+                                    map_bytes);
+#else
                 map = mmap(NULL, map_bytes, PROT_READ, MAP_SHARED, f, file_offset);
                 if (map == (void *) -1)
                 {
@@ -100,14 +133,24 @@ void send_file (void)
                         break;
                 }
                 madvise(map, map_bytes, MADV_SEQUENTIAL);
+#endif
 
                 e = data_reply(map + page_offset, map_bytes - page_offset);
                 if (e == -1)
                         break;
 
+#ifdef __MINGW32__
+                ok = UnmapViewOfFile(map);
+                if (!ok)
+                {
+                        e = -1;
+                        break;
+                }
+#else
                 e = munmap(map, map_bytes);
                 if (e == -1)
                         break;
+#endif
 
                 /*
                  * In the next iteration, "completed" will be properly aligned
