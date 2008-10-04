@@ -34,6 +34,17 @@ endif
 
 
 #
+# Hasefroch specific link arguments.  As we use WinSock 2 (and possibly other MS
+# extensions) we need to link to special libraries.
+#
+
+HLIBS := -lws2_32
+ifeq ($(RETR),hase)
+	HLIBS += -lmswsock
+endif
+
+
+#
 # Source files, except for main
 #
 
@@ -76,10 +87,10 @@ uftps.dbg: $(SOURCES:.c=.dbg.o) main-unix.dbg.o
 	@echo ' Linking   [debug] $@' && $(CC) $(LDFLAGS_DBG) -o $@ $^ $(LIBS)
 
 uftps.exe: $(SOURCES:.c=.obj) main-hase.obj
-	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^ -lws2_32
+	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^ $(HLIBS)
 
 uftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
-	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ -lws2_32
+	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
 
 
 #
