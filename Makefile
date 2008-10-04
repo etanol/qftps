@@ -4,7 +4,8 @@
 # To display this Makefile help use: make help
 #
 
-RETR ?= generic
+RETR  ?= generic
+UNAME := $(shell uname)
 
 
 #
@@ -23,7 +24,7 @@ LDFLAGS_DBG := -Wall -pipe -g
 # Solaris specific configuration, not using GCC
 #
 
-ifeq ($(shell uname),SunOS)
+ifeq ($(UNAME),SunOS)
 	CC          := cc
 	CFLAGS      := -xO3
 	LDFLAGS     := -s
@@ -138,7 +139,7 @@ command_parser.h: command_parser.gperf
 dist:
 	@v=`hg id -t | head -1` ; \
 	{ test -z "$$v" || test "$$v" = 'tip' ; } && v=`hg id -i | head -1` ; \
-	hg archive -X .hgtags uftps-$$v ; \
+	hg archive -X .hg_archival.txt -X .hgtags uftps-$$v ; \
 	$(MAKE) -C uftps-$$v command_parser.h ; \
 	tar cvf - uftps-$$v | gzip -vfc9 >uftps-$$v.tar.gz ; \
 	rm -rf uftps-$$v
@@ -171,8 +172,8 @@ help:
 	@echo '	generic   - Generic multiplatform implementation using read() and'
 	@echo '	            send().  Works everyhere but it is the least memory'
 	@echo '	            efficient.  This is the default value when none selected.'
-	@echo '	mmap      - Generic UNIX implementation using mmap() instead of '
-	@echo '	            read() to save some memory copies.'
+	@echo '	mmap      - Multiplatform implementation using file mapping'
+	@echo '	            primitives to save some memory copies.'
 	@echo '	linux     - Linux (2.2 and above) version using the sendfile() system'
 	@echo '	            call.'
 	@echo '	splice    - Linux (2.6.17 and above) version which uses the new '

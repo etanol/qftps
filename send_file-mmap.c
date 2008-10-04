@@ -36,10 +36,14 @@
 #define MAP_MAX_BYTES  (MAP_CHUNK_MEGS * 1024 * 1024)
 
 
-/* Cached values: system page size and some masks to extract bits */
-static off_t Page_Size = 0;
-static off_t File_Mask = 0;
-static off_t Page_Mask = 0;
+/*
+ * Cached values: system page size and some masks to extract bits.  Make sure
+ * they are initialized to zero.  Does Hasefroch have BSS-like section in its
+ * executables?
+ */
+static off_t  Page_Size = 0;
+static off_t  File_Mask = 0;
+static off_t  Page_Mask = 0;
 
 
 /*
@@ -89,6 +93,7 @@ void send_file (void)
          */
         fm = CreateFileMapping((HANDLE) _get_osfhandle(f), NULL, PAGE_READONLY,
                                0, 0, NULL);
+        /* TODO: Some error checking here */
 #endif
 
         e = open_data_channel();
@@ -153,7 +158,7 @@ void send_file (void)
 #endif
 
                 /*
-                 * In the next iteration, "completed" will be properly aligned
+                  * In the next iteration, "completed" will be properly aligned
                  * to a page boundary; provided that 1 << 20 (one megabyte
                  * offset) is aligned too.
                  */
