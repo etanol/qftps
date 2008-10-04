@@ -50,6 +50,16 @@ static off_t  Page_Mask = 0;
  * RETR implementation using file mappings to avoid some memory copies when
  * reading from a file.  This version used to be UNIX specific, but recent
  * Hasefroch support has been added.
+ *
+ * As the files can be large, it is unwise to map the whole file at once or the
+ * virtual memory could be exhausted.  Even if that doesn't happen, the system
+ * could become swappy.
+ *
+ * Therefore, only a pice of the file is mapped at once; not too large and not
+ * too small to take advantage of the I/O benefits offered by the file mappings.
+ * At each iteration of the send loop a chunk of the file is mapped, sent over
+ * the data channel, and then unmapped to release the memory for the next
+ * iteration.
  */
 void send_file (void)
 {
@@ -93,7 +103,13 @@ void send_file (void)
          */
         fm = CreateFileMapping((HANDLE) _get_osfhandle(f), NULL, PAGE_READONLY,
                                0, 0, NULL);
-        /* TODO: Some error checking here */
+        if (fm == NULL)
+        {
+                error("Creating file mapping for %s", SS.aux);
+                reply_c("451 Problems mapping file.\r\n");
+                close(f);
+                return;
+        }
 #endif
 
         e = open_data_channel();
@@ -130,6 +146,11 @@ void send_file (void)
                                     (completed >> 32) & 0x00FFFFFFFFLL,
                                      completed        & 0x00FFFFFFFFLL,
                                     map_bytes);
+                if (map == NULL)
+                {
+                        e = -1;
+                        break;
+                }
 #else
                 map = mmap(NULL, map_bytes, PROT_READ, MAP_SHARED, f, file_offset);
                 if (map == (void *) -1)
