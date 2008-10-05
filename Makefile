@@ -139,7 +139,7 @@ command_parser.h: command_parser.gperf
 dist:
 	@v=`hg id -t | head -1` ; \
 	{ test -z "$$v" || test "$$v" = 'tip' ; } && v=`hg id -i | head -1` ; \
-	hg archive -X .hg_archival.txt -X .hgtags uftps-$$v ; \
+	hg archive -X .hg_archival.txt -X .hgtags -X makebins.sh uftps-$$v ; \
 	$(MAKE) -C uftps-$$v command_parser.h ; \
 	tar cvf - uftps-$$v | gzip -vfc9 >uftps-$$v.tar.gz ; \
 	rm -rf uftps-$$v
