@@ -143,8 +143,8 @@ void send_file (void)
 
 #ifdef __MINGW32__
                 map = MapViewOfFile(fm, FILE_MAP_READ,
-                                    (completed >> 32) & 0x00FFFFFFFFLL,
-                                     completed        & 0x00FFFFFFFFLL,
+                                    (file_offset >> 32) & 0x00FFFFFFFFLL,
+                                     file_offset        & 0x00FFFFFFFFLL,
                                     map_bytes);
                 if (map == NULL)
                 {
