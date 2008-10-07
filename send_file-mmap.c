@@ -79,7 +79,7 @@ void send_file (void)
                 SYSTEM_INFO  si;
 
                 GetSystemInfo(&si);
-                Page_Size = si.dwPageSize;
+                Page_Size = si.dwAllocationGranularity;
 #else
                 Page_Size = sysconf(_SC_PAGESIZE);
 #endif
