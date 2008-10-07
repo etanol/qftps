@@ -157,9 +157,6 @@ clean:
 	-rm -f *.o *.obj
 	-rm -f uftps uftps.dbg uftps.exe uftps.dbg.exe
 
-distclean: clean
-	-rm -f command_parser.h
-
 help:
 	@echo 'User targets:'
 	@echo ''
@@ -168,7 +165,6 @@ help:
 	@echo '	hase      - Build the Hasefroch binary.'
 	@echo '	dhase     - Build the Hasefroch binary with debugging support.'
 	@echo '	clean     - Clean object and binary files.'
-	@echo '	distclean - Clean the command parser (clean implied).'
 	@echo ''
 	@echo 'You can also choose which RETR implementation to use by setting the'
 	@echo 'RETR make variable to one of these values:'
