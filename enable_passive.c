@@ -39,7 +39,7 @@ void enable_passive (void)
         struct sockaddr_in  sai;
         socklen_t           sai_len = sizeof(struct sockaddr_in);
         unsigned char       addr[6];
-        char                pasv_reply[32];
+        char                pasv_reply[64];
 
         /* Safety check in case there was some error before */
         if (SS.passive_sk != -1)
@@ -90,8 +90,9 @@ void enable_passive (void)
          * fields in sockaddr_in structures are in network byte order */
         memcpy(&addr[0], &sai.sin_addr, 4);
         memcpy(&addr[4], &sai.sin_port, 2);
-        l = snprintf(pasv_reply, 32, "227 =%u,%u,%u,%u,%u,%u\r\n", addr[0],
-                     addr[1], addr[2], addr[3], addr[4], addr[5]);
+        l = snprintf(pasv_reply, 64,
+                     "227 Entering Passive Mode (%u,%u,%u,%u,%u,%u).\r\n",
+                     addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 
         SS.passive_sk = bsk;
         SS.mode       = PASSIVE_MODE;
