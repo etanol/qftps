@@ -23,6 +23,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/*
+ * The NEEDS_ARGUMENT macro serves as an annotation for a command that expects
+ * an argument to be present.  When the argument is not present, an "automatic"
+ * reply is generated.
+ *
+ * As this makes the code slightly more branchy than it already is, branch
+ * prediction hints are used when available.
+ */
+#if !defined(__GNUC__) && !defined(__MINGW32__)
+#  define __builtin_expect(cond, val)
+#endif
+
+#define NEEDS_ARGUMENT \
+        if (__builtin_expect(SS.arg == NULL, 0)) \
+        { \
+                reply_c("501 I need an argument.\r\n"); \
+                break; \
+        }
+
 
 /*
  * Main FTP server loop.  The switch should be converted to an indexed jump
@@ -79,21 +98,21 @@ void command_loop (void)
                 /*
                  * A bit more complex commands.
                  */
-                case FTP_MODE:
+                case FTP_MODE:   NEEDS_ARGUMENT
                         if (toupper(SS.arg[0]) == 'S')
                                 reply_c("200 MODE set to stream.\r\n");
                         else
                                 reply_c("504 Mode not supported.\r\n");
                         break;
 
-                case FTP_STRU:
+                case FTP_STRU:   NEEDS_ARGUMENT
                         if (toupper(SS.arg[0]) == 'F')
                                 reply_c("200 STRUcture set to file.\r\n");
                         else
                                 reply_c("504 Structure not supported.\r\n");
                         break;
 
-                case FTP_TYPE:
+                case FTP_TYPE:   NEEDS_ARGUMENT
                         switch (toupper(SS.arg[0]))
                         {
                                 case 'I':
@@ -108,7 +127,7 @@ void command_loop (void)
                         reply(SS.aux, l);
                         break;
 
-                case FTP_REST:
+                case FTP_REST:   NEEDS_ARGUMENT
                         /* We don't need str_to_ll() as sscanf() does de job */
 #ifdef __MINGW32__
                         sscanf(SS.arg, "%I64d", (__int64 *) &SS.rest_offset);
