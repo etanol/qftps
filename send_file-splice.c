@@ -27,6 +27,9 @@
  * RETR command implementation using Linux new splice() system call to minimize
  * memory copies.  Due to the nature of the system call, it is not even
  * necessary to perform the initial seek in case a REST command was issued.
+ *
+ * XXX: This implementation does not work yet.  The splice() system call seems
+ *      to have undocumented limitations.
  */
 void send_file (void)
 {
