@@ -153,7 +153,7 @@ void send_file (void)
                 }
 #else
                 map = mmap(NULL, map_bytes, PROT_READ, MAP_SHARED, f, file_offset);
-                if (map == (void *) -1)
+                if (map == MAP_FAILED)
                 {
                         e = -1;
                         break;
