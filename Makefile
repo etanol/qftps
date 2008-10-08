@@ -188,11 +188,11 @@ help:
 	@echo 'For example, to select the mmap RETR implementation, the compilation'
 	@echo 'command line can be:'
 	@echo ''
-	@echo '		make RETR=mmap debug'
+	@echo '		$(MAKE) RETR=mmap debug'
 	@echo ''
 	@echo 'You can also add custom compilation and linking flags by defining the'
 	@echo 'following make variables EXTRA_CFLAGS and EXTRA_LDFLAGS.  For example:'
 	@echo ''
-	@echo '		make EXTRA_CFLAGS="-funroll-loops -march=core2"'
+	@echo '		$(MAKE) EXTRA_CFLAGS="-funroll-loops -march=core2"'
 	@echo ''
 
