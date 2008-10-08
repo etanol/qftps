@@ -32,7 +32,7 @@
  * prediction hints are used when available.
  */
 #if !defined(__GNUC__) && !defined(__MINGW32__)
-#  define __builtin_expect(cond, val)
+#  define __builtin_expect(cond, val)  cond
 #endif
 
 #define NEEDS_ARGUMENT \
