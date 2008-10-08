@@ -179,7 +179,7 @@ void send_file (void)
 #endif
 
                 /*
-                  * In the next iteration, "completed" will be properly aligned
+                 * In the next iteration, "completed" will be properly aligned
                  * to a page boundary; provided that 1 << 20 (one megabyte
                  * offset) is aligned too.
                  */

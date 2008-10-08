@@ -48,7 +48,7 @@ static void read_request (void)
         l = SS.input_len;
         /* Shift trailing data from previous call */
         if (SS.input_offset > 0)
-                memmove(SS.input, SS.input + SS.input_offset, l);
+                memmove(SS.input, &SS.input[SS.input_offset], l);
 
         do {
                 while (i < l && SS.input[i] != '\n')
@@ -62,7 +62,7 @@ static void read_request (void)
                 }
 
                 /* Buffer data exhausted, get more from the network */
-                b = recv(SS.control_sk, SS.input + l, LINE_SIZE - l, 0);
+                b = recv(SS.control_sk, &SS.input[l], LINE_SIZE - l, 0);
                 if (b <= 0)
                 {
                         if (b == -1)
@@ -117,8 +117,6 @@ enum command next_command (void)
         SS.input[i] = '\0';
 
         cmd = parse_command(SS.input, i);
-        if (cmd == NULL)
-                return FTP_NONE;
-        return cmd->value;
+        return (cmd != NULL ? cmd->value : FTP_NONE);
 }
 
