@@ -114,6 +114,8 @@ int main (int argc, char **argv)
         socklen_t           sai_len = sizeof(struct sockaddr_in);
         WSADATA             wd;
 
+        printf("User FTP Server, version %s\n\n", UFTPS_VERSION);
+
         SS.pid = (int) _getpid();
 
         if (WSAStartup(MAKEWORD(2, 2), &wd))
@@ -162,9 +164,8 @@ int main (int argc, char **argv)
         if (e == -1)
                 fatal("Listening at main server socket");
 
-        notice("UFTPS listening on port %d (TCP)", port);
+        notice("Listening on port %d (TCP)", port);
         notice("Use CTRL + C to finish");
-        notice("If you want to use a different port, specify it as the only argument in the command line");
 
         /* Main server loop (accepting connections) */
         do {
