@@ -23,9 +23,10 @@
 
 /*
  * Apply new path components to an existing working directory.  The working
- * directory is contained (full path) in "wd", which is a buffer with a capacity
- * of LINE_SIZE bytes.  Parameter "len" specifies the current length of the
- * working directory.
+ * directory is contained in "wd" as the full relative path from the real
+ * working directory of the process, which is a buffer with a capacity of
+ * LINE_SIZE bytes.  Parameter "len" specifies the current length of the working
+ * directory.
  *
  * This function returns the length of "wd" after applying "path" on it, which
  * means that the working directory is modified in-place.  In case the working
@@ -97,9 +98,9 @@ static int apply_path (const char *path, char *wd, int len)
 
 
 /*
- * Expand the command argument to its corresponding full path.  This is
- * necessary because chdir() is never performed so the correct path needs to be
- * resolved for each file or directory to be accessed.
+ * Expand the command argument to its corresponding full (relative) path.  This
+ * is necessary because chdir() is never performed so the correct path needs to
+ * be resolved for each file or directory to be accessed.
  *
  * Returns the length of the expanded argument, including the trailing null
  * byte (just as apply_path() does).  Also note that the expanded argument is
