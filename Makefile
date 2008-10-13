@@ -81,7 +81,7 @@ SOURCES += send_file-$(RETR).c
 # Phony targets and aliases
 #
 
-.PHONY: all debug clean distclean dist help
+.PHONY: all debug clean dist help
 
 all  : uftps
 debug: uftps.dbg
