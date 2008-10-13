@@ -21,7 +21,7 @@ LDFLAGS_DBG := -Wall -pipe -g
 
 
 #
-# Solaris specific configuration, not using GCC
+# Commercial UNIX flavours do not use GCC.  Try their provided compiler instead.
 #
 
 ifeq ($(UNAME),SunOS)
@@ -31,6 +31,23 @@ ifeq ($(UNAME),SunOS)
 	CFLAGS_DBG  := -g -DDEBUG
 	LDFLAGS_DBG := -g
 	LIBS        := -lsocket -lnsl
+endif
+
+ifeq ($(UNAME),HP-UX)
+	CC          := cc
+	CFLAGS      := +O3 #+DAportable
+#	CFLAGS      := -D_XOPEN_SOURCE_EXTENDED +O3
+	LDFLAGS     := -s
+	CFLAGS_DBG  := +O0 -g -DDEBUG
+	LDFLAGS_DBG := -g
+endif
+
+ifeq ($(UNAME),OSF1)
+	CC          := cc
+	CFLAGS      :=
+	LDFLAGS     := -s
+	CFLAGS_DBG  := -g -DDEBUG
+	LDFLAGS_DBG := -g
 endif
 
 
