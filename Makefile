@@ -98,7 +98,7 @@ SOURCES += send_file-$(RETR).c
 # Phony targets and aliases
 #
 
-.PHONY: all debug clean dist help
+.PHONY: all debug clean dist bdist help
 
 all  : uftps
 debug: uftps.dbg
@@ -157,13 +157,32 @@ command_parser.h: command_parser.gperf
 # Distributing source code (run only from repository checkouts)
 #
 
-dist:
-	@v=`hg id -t | head -1` ; \
-	{ test -z "$$v" || test "$$v" = 'tip' ; } && v=`hg id -i | head -1` ; \
-	hg archive -X .hg_archival.txt -X .hgtags -X makebins.sh uftps-$$v ; \
-	$(MAKE) -C uftps-$$v command_parser.h ; \
-	tar cvf - uftps-$$v | gzip -vfc9 >uftps-$$v.tar.gz ; \
-	rm -rf uftps-$$v
+dist bdist:
+	@v=`hg id -t | head -1`                                          ; \
+	if [ -z "$$v" ] || [ "$$v" = 'tip' ]                             ; \
+	then                                                               \
+	        v=`hg id -i | head -1`                                   ; \
+	fi                                                               ; \
+	                                                                   \
+	if [ '$@' = 'dist' ]                                             ; \
+	then                                                               \
+	        d="uftps-$$v"                                            ; \
+	else                                                               \
+	        d="bdist_uftps-$$v"                                      ; \
+	fi                                                               ; \
+	                                                                   \
+	hg archive -X .hg_archival.txt -X .hgtags -X makebins.sh.in $$d  ; \
+	$(MAKE) -C $$d command_parser.h                                  ; \
+	chmod o+r $$d/command_parser.h                                   ; \
+	                                                                   \
+	if [ '$@' = 'dist' ]                                             ; \
+	then                                                               \
+	        tar cvf - $$d | gzip -vfc9 >$$d.tar.gz                   ; \
+	        rm -rf $$d                                               ; \
+	else                                                               \
+	        sed "s/@@@V@@@/$$v/g" makebins.sh.in >$$d/makebins.sh    ; \
+	        chmod ug+x $$d/makebins.sh                               ; \
+	fi
 
 
 #

@@ -12,16 +12,6 @@ cflags=''
 ldflags=''
 exe=''
 
-version=`hg id -t | head -1`
-if [ -z "$version" ] || [ "$version" = 'tip' ]
-then
-    version=`hg id -i | head -1`
-    if [ -z "$version" ]
-    then
-        version='XXX'  # Just in case
-    fi
-fi
-
 case $platform in
     linux) platform="linux_`uname -m`"
            flavours='generic mmap linux'
@@ -36,7 +26,7 @@ case $platform in
     *) ;;
 esac
 
-id="${version}_$platform"
+id="@@@V@@@_$platform"
 
 [ -d uftps-bin-$id  ] || mkdir uftps-bin-$id
 
