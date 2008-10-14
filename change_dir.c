@@ -67,8 +67,8 @@ void change_dir (void)
                  */
                 if (l == 2)
                 {
-                        SS.arg[l - 1] = '/';
-                        SS.arg[l]     = '\0';
+                        SS.arg[1] = '/';
+                        SS.arg[2] = '\0';
                         l++;
                 }
 #endif

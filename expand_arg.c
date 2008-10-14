@@ -131,8 +131,8 @@ int expand_arg (void)
                  */
                 if (len == 3)
                 {
+                        SS.aux[1] = '\0';
                         len--;
-                        SS.aux[len - 1] = '\0';
                 }
 #endif
         }
