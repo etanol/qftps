@@ -163,7 +163,7 @@ dist bdist:
 	then                                                               \
 	        t=`hg tags | sed -n -e '2 s/ .*$$// p'`                  ; \
 	        rb=`hg id -nr $$t`                                       ; \
-	        rc=`hg id -n | sed -e 's/[^0-9]*//g'`                    ; \
+	        rc=`hg id -n | sed -e 's/[^0-9][^0-9]*//g'`              ; \
 	        v="$$t+`expr $$rc - $$rb`"                               ; \
 	fi                                                               ; \
 	                                                                   \
