@@ -161,7 +161,10 @@ dist bdist:
 	@v=`hg id -t | head -1`                                          ; \
 	if [ -z "$$v" ] || [ "$$v" = 'tip' ]                             ; \
 	then                                                               \
-	        v=`hg id -i | head -1`                                   ; \
+	        t=`hg tags | sed -n -e '2 s/ .*$$// p'`                  ; \
+	        rb=`hg id -nr $$t`                                       ; \
+	        rc=`hg id -n | sed -e 's/[^0-9]*//g'`                    ; \
+	        v="$$t+`expr $$rc - $$rb`"                               ; \
 	fi                                                               ; \
 	                                                                   \
 	if [ '$@' = 'dist' ]                                             ; \
