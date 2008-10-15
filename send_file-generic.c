@@ -70,13 +70,14 @@ void send_file (void)
 
         /*
          * Main transfer loop.  We use the auxiliary buffer to temporarily store
-         * chunks of file.
+         * chunks of file.  Because of that, the filename is lost and cannot be
+         * shown in error messages.
          */
         while (completed < size)
         {
                 b = read(f, SS.aux, LINE_SIZE);
                 if (b == -1)
-                        break;  /* Cannot show any useful error message here */
+                        break;
 
                 e = data_reply(SS.aux, b);
                 if (e == -1)
@@ -88,7 +89,10 @@ void send_file (void)
         if (b != -1 && e != -1)
                 reply_c("226 File content sent.\r\n");
         else
+        {
+                error("Sending a file");
                 reply_c("426 Something happened, transfer aborted.\r\n");
+        }
 
         close(f);
         closesocket(SS.data_sk);
