@@ -37,8 +37,8 @@ void send_file (void)
         OVERLAPPED  ovlp;
         BOOL        ok = TRUE;
 
-        completed       = SS.rest_offset;
-        SS.rest_offset  = 0;
+        completed      = SS.rest_offset;
+        SS.rest_offset = 0;
 
         f = open_file(&size);
         if (f == -1)
