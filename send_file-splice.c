@@ -18,6 +18,7 @@
  */
 
 #include "uftps.h"
+#include <limits.h>
 #include <unistd.h>
 #define __USE_GNU
 #include <fcntl.h>
