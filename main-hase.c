@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 
-struct _SessionScope  SS;  /* SS --> Session State*/
+struct _SessionScope  SS;  /* SS --> Session State */
 static char          *Program_Name;
 
 
