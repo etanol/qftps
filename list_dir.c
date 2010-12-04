@@ -141,7 +141,11 @@ void list_dir (int full_list)
                         }
 
                         l = snprintf(item, 512,
+#ifdef __MINGW32__
+                                     "%s 1 ftp ftp %13I64d %s %3d %4d %s\r\n",
+#else
                                      "%s 1 ftp ftp %13lld %s %3d %4d %s\r\n",
+#endif
                                      (S_ISDIR(s.st_mode) ? "dr-xr-xr-x"
                                       : "-r--r--r--"), (long long) s.st_size,
                                      month[t->tm_mon], t->tm_mday,
