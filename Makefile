@@ -106,7 +106,7 @@ debug  : uftps.dbg
 hase   : uftps.exe
 hase64 : uftps64.exe
 dhase  : uftps.dbg.exe
-dhase64: uftps64.dbg.exe
+dhase64: uftps.dbg64.exe
 
 
 #
@@ -128,7 +128,7 @@ uftps64.exe: $(SOURCES:.c=.obj64) main-hase.obj64
 uftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
 	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
 
-uftps64.dbg.exe: $(SOURCES:.c=.dbg.obj64) main-hase.dbg.obj64
+uftps.dbg64.exe: $(SOURCES:.c=.dbg.obj64) main-hase.dbg.obj64
 	@echo ' Linking   [win64] [debug] $@' && $(HCC64) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
 
 
@@ -211,7 +211,7 @@ dist bdist:
 
 clean:
 	-rm -f *.o *.obj *.obj64
-	-rm -f uftps uftps.dbg uftps.exe uftps64.exe uftps.dbg.exe uftps64.dbg.exe
+	-rm -f uftps uftps.dbg uftps.exe uftps64.exe uftps.dbg.exe uftps.dbg64.exe
 
 help:
 	@echo 'User targets:'

@@ -22,7 +22,7 @@ case $platform in
             ;;
     hase64) targets='hase64 dhase64'
             flavours='generic mmap hase'
-            exe='.exe'
+            exe='64.exe'
             ;;
     mac)    cflags='-arch i386 -arch ppc -arch ppc64'
             ldflags='-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk'
