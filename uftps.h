@@ -32,6 +32,7 @@
  */
 #define WINVER              0x0501
 #define __MSVCRT_VERSION__  0x0601
+#define NO_OLDNAMES
 #define _NO_OLDNAMES
 
 /*

@@ -55,6 +55,12 @@ struct stat
 #define st_mode   x.st_mode
 #define st_mtime  x.st_mtime
 
+#ifdef __WIN64__
+   /* When defining NO_OLDNAMES, we lose theese */
+#  define _S_ISDIR(m)  (((m) & _S_IFMT) == _S_IFDIR)
+#  define _S_ISREG(m)  (((m) & _S_IFMT) == _S_IFREG)
+#endif
+
 #define S_ISDIR   _S_ISDIR
 #define S_ISREG   _S_ISREG
 

@@ -13,6 +13,7 @@ UNAME := $(shell uname)
 #
 
 HCC         := i586-mingw32msvc-gcc
+HCC64       := amd64-mingw32msvc-gcc
 CC          := gcc
 CFLAGS      := -Wall -pipe -O3 -fomit-frame-pointer
 LDFLAGS     := -Wall -pipe -Wl,-s
@@ -100,10 +101,12 @@ SOURCES += send_file-$(RETR).c
 
 .PHONY: all debug clean dist bdist help
 
-all  : uftps
-debug: uftps.dbg
-hase : uftps.exe
-dhase: uftps.dbg.exe
+all    : uftps
+debug  : uftps.dbg
+hase   : uftps.exe
+hase64 : uftps64.exe
+dhase  : uftps.dbg.exe
+dhase64: uftps64.dbg.exe
 
 
 #
@@ -119,8 +122,14 @@ uftps.dbg: $(SOURCES:.c=.dbg.o) main-unix.dbg.o
 uftps.exe: $(SOURCES:.c=.obj) main-hase.obj
 	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^ $(HLIBS)
 
+uftps64.exe: $(SOURCES:.c=.obj64) main-hase.obj64
+	@echo ' Linking   [win64]         $@' && $(HCC64) $(LDFLAGS) -o $@ $^ $(HLIBS)
+
 uftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
 	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
+
+uftps64.dbg.exe: $(SOURCES:.c=.dbg.obj64) main-hase.dbg.obj64
+	@echo ' Linking   [win64] [debug] $@' && $(HCC64) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
 
 
 #
@@ -133,21 +142,29 @@ uftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
 %.obj: %.c uftps.h hase.h
 	@echo ' Compiling [win32]         $@' && $(HCC) $(CFLAGS) -c -o $@ $<
 
+%.obj64: %.c uftps.h hase.h
+	@echo ' Compiling [win64]         $@' && $(HCC64) $(CFLAGS) -c -o $@ $<
+
 %.dbg.o: %.c uftps.h
 	@echo ' Compiling [debug] $@' && $(CC) $(CFLAGS_DBG) -c -o $@ $<
 
 %.dbg.obj: %.c uftps.h hase.h
 	@echo ' Compiling [win32] [debug] $@' && $(HCC) $(CFLAGS_DBG) -c -o $@ $<
 
+%.dbg.obj64: %.c uftps.h hase.h
+	@echo ' Compiling [win64] [debug] $@' && $(HCC64) $(CFLAGS_DBG) -c -o $@ $<
+
 
 #
 # Special rules
 #
 
-next_command.o      : command_parser.h
-next_command.dbg.o  : command_parser.h
-next_command.obj    : command_parser.h
-next_command.dbg.obj: command_parser.h
+next_command.o        : command_parser.h
+next_command.dbg.o    : command_parser.h
+next_command.obj      : command_parser.h
+next_command.obj64    : command_parser.h
+next_command.dbg.obj  : command_parser.h
+next_command.dbg.obj64: command_parser.h
 
 command_parser.h: command_parser.gperf
 	@echo ' Generating        $@' && gperf --output-file=$@ $<
@@ -193,8 +210,8 @@ dist bdist:
 #
 
 clean:
-	-rm -f *.o *.obj
-	-rm -f uftps uftps.dbg uftps.exe uftps.dbg.exe
+	-rm -f *.o *.obj *.obj64
+	-rm -f uftps uftps.dbg uftps.exe uftps64.exe uftps.dbg.exe uftps64.dbg.exe
 
 help:
 	@echo 'User targets:'
@@ -202,7 +219,9 @@ help:
 	@echo '	all       - Default target.  Build the UNIX binary.'
 	@echo '	debug     - Build the UNIX binary with debugging support.'
 	@echo '	hase      - Build the Hasefroch binary.'
+	@echo '	hase64    - Build the Hasefroch 64 bit binary.'
 	@echo '	dhase     - Build the Hasefroch binary with debugging support.'
+	@echo '	dhase64   - Build the Hasefroch 64 bit binary with debugging support.'
 	@echo '	clean     - Clean object and binary files.'
 	@echo ''
 	@echo 'You can also choose which RETR implementation to use by setting the'

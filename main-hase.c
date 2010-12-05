@@ -27,6 +27,13 @@
 struct _SessionScope  SS;  /* SS --> Session State */
 static char          *Program_Name;
 
+/* This is quite ugly, but Win64 type sizes are screwed */
+#ifdef __WIN64__
+#  define INT_FROM_HANDLE(h)  ((int) (long long) (h))
+#else
+#  define INT_FROM_HANDLE(h)  ((int) (h))
+#endif
+
 
 /*
  * Create a child process to attend the recently connected client.  As a
@@ -42,7 +49,7 @@ static char          *Program_Name;
  */
 static unsigned __stdcall create_child_process (void *x)
 {
-        int                  dup_sk, sk = (int) x;
+        HANDLE               dup_sk, sk = x;
         BOOL                 ok;
         STARTUPINFO          si;
         PROCESS_INFORMATION  pi;
@@ -54,21 +61,21 @@ static unsigned __stdcall create_child_process (void *x)
         /*
          * Duplicate the socket descriptor to create an inheritable copy.
          */
-        ok = DuplicateHandle(GetCurrentProcess(), (HANDLE) sk,
-                             GetCurrentProcess(), (LPHANDLE) (HANDLE_PTR) &dup_sk,
-                             0, TRUE, DUPLICATE_SAME_ACCESS);
+        ok = DuplicateHandle(GetCurrentProcess(), sk, GetCurrentProcess(),
+                             &dup_sk, 0, TRUE, DUPLICATE_SAME_ACCESS);
         if (!ok)
         {
-                error("Duplicating handle %d", sk);
+                error("Duplicating handle %d", INT_FROM_HANDLE(sk));
                 return 1;
         }
-        debug("Socket %d duplicated to %d", sk, dup_sk);
+        debug("Socket %d duplicated to %d", INT_FROM_HANDLE(sk),
+              INT_FROM_HANDLE(dup_sk));
 
         /*
          * Spawn the child process providing the inheritable socket descriptor
          * as a command line argument.
          */
-        snprintf(argbuf, 16, "@ %d", dup_sk);
+        snprintf(argbuf, 16, "@ %d", INT_FROM_HANDLE(dup_sk));
         ok = CreateProcess(Program_Name, argbuf, NULL, NULL, TRUE, 0, NULL,
                            NULL, &si, &pi);
         if (!ok)
@@ -93,8 +100,8 @@ static unsigned __stdcall create_child_process (void *x)
          */
         debug("And waiting for process to terminate");
         WaitForSingleObject(pi.hProcess, INFINITE);
-        closesocket(sk);
-        closesocket(dup_sk);
+        closesocket(INT_FROM_HANDLE(sk));
+        closesocket(INT_FROM_HANDLE(dup_sk));
         debug("Child done, finishing monitor thread");
 
         return 0;
@@ -179,7 +186,12 @@ int main (int argc, char **argv)
 
                 /* Create a monitor thread for the client (read more above) */
                 thread_handle = _beginthreadex(NULL, 0, create_child_process,
-                                               (void *) cmd_sk, 0, &th);
+#ifdef __WIN64__
+                                               (void *) (long long) cmd_sk,
+#else
+                                               (void *) cmd_sk,
+#endif
+                                               0, &th);
                 if (thread_handle == 0)
                         error("Launching monitor thread");
         } while (1);

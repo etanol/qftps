@@ -13,16 +13,20 @@ ldflags=''
 exe=''
 
 case $platform in
-    linux) platform="linux_`uname -m`"
-           flavours='generic mmap linux'
-           ;;
-    hase)  targets='hase dhase'
-           flavours='generic mmap hase'
-           exe='.exe'
-           ;;
-    mac)   cflags='-arch i386 -arch ppc -arch ppc64'
-           ldflags='-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk'
-           ;;
+    linux)  platform="linux_`uname -m`"
+            flavours='generic mmap linux'
+            ;;
+    hase)   targets='hase dhase'
+            flavours='generic mmap hase'
+            exe='.exe'
+            ;;
+    hase64) targets='hase64 dhase64'
+            flavours='generic mmap hase'
+            exe='.exe'
+            ;;
+    mac)    cflags='-arch i386 -arch ppc -arch ppc64'
+            ldflags='-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk'
+            ;;
     *) ;;
 esac
 

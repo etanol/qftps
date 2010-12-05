@@ -19,7 +19,9 @@
 
 #include "uftps.h"
 #include <ctype.h>
-#include <unistd.h>
+#ifndef __WIN64__
+#  include <unistd.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 
