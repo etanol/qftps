@@ -47,7 +47,7 @@ do
     mv -f uftps.dbg$exe uftps-bin-$id/uftps-$flav.dbg$exe
 done
 
-if [ $platform = hase ]
+if [ $platform = hase ] || [ $platform = hase64 ]
 then
     zip -rm9 uftps-bin-$id.zip uftps-bin-$id
 else
