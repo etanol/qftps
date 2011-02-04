@@ -18,6 +18,7 @@
  */
 
 #include "uftps.h"
+#include <limits.h>
 #include <sys/sendfile.h>
 #include <unistd.h>
 #include <fcntl.h>
