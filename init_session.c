@@ -1,10 +1,10 @@
 /*
- * User FTP Server,  Share folders over FTP without being root.
+ * Quick FTP Server,  Share folders over FTP without being root.
  *
  * Public domain.  The author disclaims copyright to this source code.
  */
 
-#include "uftps.h"
+#include "qftps.h"
 #ifdef __MINGW32__
 #  include "hase.h"
 #else
@@ -58,7 +58,7 @@ void init_session (int control_sk)
 
         notice("Attending new client from %s",
                inet_ntoa(SS.client_address.sin_addr));
-        reply_c("220-User FTP Server ready.\r\n"
+        reply_c("220-Quick FTP Server ready.\r\n"
                 "220 Features: a p .\r\n");
 }
 

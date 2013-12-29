@@ -32,7 +32,7 @@ esac
 
 id="@@@V@@@_$platform"
 
-[ -d uftps-bin-$id  ] || mkdir uftps-bin-$id
+[ -d qftps-bin-$id  ] || mkdir qftps-bin-$id
 
 for flav in $flavours
 do
@@ -43,15 +43,15 @@ do
         make RETR=$flav $targets
     fi
 
-    mv -f uftps$exe     uftps-bin-$id/uftps-$flav$exe
-    mv -f uftps.dbg$exe uftps-bin-$id/uftps-$flav.dbg$exe
+    mv -f qftps$exe     qftps-bin-$id/qftps-$flav$exe
+    mv -f qftps.dbg$exe qftps-bin-$id/qftps-$flav.dbg$exe
 done
 
 if [ $platform = hase ] || [ $platform = hase64 ]
 then
-    zip -rm9 uftps-bin-$id.zip uftps-bin-$id
+    zip -rm9 qftps-bin-$id.zip qftps-bin-$id
 else
-    tar cvf - uftps-bin-$id | gzip -vfc9 >uftps-bin-$id.tar.gz
-    rm -rf uftps-bin-$id
+    tar cvf - qftps-bin-$id | gzip -vfc9 >qftps-bin-$id.tar.gz
+    rm -rf qftps-bin-$id
 fi
 

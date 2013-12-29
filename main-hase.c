@@ -1,10 +1,10 @@
 /*
- * User FTP Server,  Share folders over FTP without being root.
+ * Quick FTP Server,  Share folders over FTP without being root.
  *
  * Public domain.  The author disclaims copyright to this source code.
  */
 
-#include "uftps.h"
+#include "qftps.h"
 #include <windows.h>
 #include <process.h>
 #include <stdlib.h>
@@ -108,7 +108,7 @@ int main (int argc, char **argv)
         socklen_t           sai_len = sizeof(struct sockaddr_in);
         WSADATA             wd;
 
-        printf("User FTP Server, version %s\n\n", UFTPS_VERSION);
+        printf("Quick FTP Server, version %s\n\n", UFTPS_VERSION);
 
         SS.pid = (int) _getpid();
 

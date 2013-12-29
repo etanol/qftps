@@ -1,18 +1,18 @@
 /*
- * User FTP Server,  Share folders over FTP without being root.
+ * Quick FTP Server,  Share folders over FTP without being root.
  *
  * Public domain.  The author disclaims copyright to this source code.
  */
 
 /*
  * Hasefroch compatiblity.  This header contains the rest of the junk (the
- * initial junk is at uftps.h) to compile the application with MinGW while
+ * initial junk is at qftps.h) to compile the application with MinGW while
  * maintaining the UNIX look of the code.  Most of the wrappers are trivial, but
  * still was desirable to avoid having aliases for the underscore prefixed
  * names.
  *
  * However, the Hasefroch support is not complete.  The way WINVER is defined in
- * uftps.h prevents this program to be compiled or run in Hasefroch versions
+ * qftps.h prevents this program to be compiled or run in Hasefroch versions
  * prior to XP SP-1.
  *
  * NOTE: Inline functions are preferred over macros as some type checking is

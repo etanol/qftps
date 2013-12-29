@@ -1,10 +1,10 @@
 /*
- * User FTP Server,  Share folders over FTP without being root.
+ * Quick FTP Server,  Share folders over FTP without being root.
  *
  * Public domain.  The author disclaims copyright to this source code.
  */
 
-#include "uftps.h"
+#include "qftps.h"
 #include <ctype.h>
 #ifndef __WIN64__
 #  include <unistd.h>

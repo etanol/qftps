@@ -1,5 +1,5 @@
 #
-# User FTP Server
+# Quick FTP Server
 #
 # To display this Makefile help use: make help
 #
@@ -101,34 +101,34 @@ SOURCES += send_file-$(RETR).c
 
 .PHONY: all debug clean dist bdist help
 
-all    : uftps
-debug  : uftps.dbg
-hase   : uftps.exe
-hase64 : uftps64.exe
-dhase  : uftps.dbg.exe
-dhase64: uftps.dbg64.exe
+all    : qftps
+debug  : qftps.dbg
+hase   : qftps.exe
+hase64 : qftps64.exe
+dhase  : qftps.dbg.exe
+dhase64: qftps.dbg64.exe
 
 
 #
 # Binaries (release and debug)
 #
 
-uftps: $(SOURCES:.c=.o) main-unix.o
+qftps: $(SOURCES:.c=.o) main-unix.o
 	@echo ' Linking           $@' && $(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
 
-uftps.dbg: $(SOURCES:.c=.dbg.o) main-unix.dbg.o
+qftps.dbg: $(SOURCES:.c=.dbg.o) main-unix.dbg.o
 	@echo ' Linking   [debug] $@' && $(CC) $(LDFLAGS_DBG) -o $@ $^ $(LIBS)
 
-uftps.exe: $(SOURCES:.c=.obj) main-hase.obj
+qftps.exe: $(SOURCES:.c=.obj) main-hase.obj
 	@echo ' Linking   [win32]         $@' && $(HCC) $(LDFLAGS) -o $@ $^ $(HLIBS)
 
-uftps64.exe: $(SOURCES:.c=.obj64) main-hase.obj64
+qftps64.exe: $(SOURCES:.c=.obj64) main-hase.obj64
 	@echo ' Linking   [win64]         $@' && $(HCC64) $(LDFLAGS) -o $@ $^ $(HLIBS)
 
-uftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
+qftps.dbg.exe: $(SOURCES:.c=.dbg.obj) main-hase.dbg.obj
 	@echo ' Linking   [win32] [debug] $@' && $(HCC) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
 
-uftps.dbg64.exe: $(SOURCES:.c=.dbg.obj64) main-hase.dbg.obj64
+qftps.dbg64.exe: $(SOURCES:.c=.dbg.obj64) main-hase.dbg.obj64
 	@echo ' Linking   [win64] [debug] $@' && $(HCC64) $(LDFLAGS_DBG) -o $@ $^ $(HLIBS)
 
 
@@ -136,22 +136,22 @@ uftps.dbg64.exe: $(SOURCES:.c=.dbg.obj64) main-hase.dbg.obj64
 # Pattern rules
 #
 
-%.o: %.c uftps.h
+%.o: %.c qftps.h
 	@echo ' Compiling         $@' && $(CC) $(CFLAGS) -c -o $@ $<
 
-%.obj: %.c uftps.h hase.h
+%.obj: %.c qftps.h hase.h
 	@echo ' Compiling [win32]         $@' && $(HCC) $(CFLAGS) -c -o $@ $<
 
-%.obj64: %.c uftps.h hase.h
+%.obj64: %.c qftps.h hase.h
 	@echo ' Compiling [win64]         $@' && $(HCC64) $(CFLAGS) -c -o $@ $<
 
-%.dbg.o: %.c uftps.h
+%.dbg.o: %.c qftps.h
 	@echo ' Compiling [debug] $@' && $(CC) $(CFLAGS_DBG) -c -o $@ $<
 
-%.dbg.obj: %.c uftps.h hase.h
+%.dbg.obj: %.c qftps.h hase.h
 	@echo ' Compiling [win32] [debug] $@' && $(HCC) $(CFLAGS_DBG) -c -o $@ $<
 
-%.dbg.obj64: %.c uftps.h hase.h
+%.dbg.obj64: %.c qftps.h hase.h
 	@echo ' Compiling [win64] [debug] $@' && $(HCC64) $(CFLAGS_DBG) -c -o $@ $<
 
 
@@ -186,9 +186,9 @@ dist bdist:
 	                                                                   \
 	if [ '$@' = 'dist' ]                                             ; \
 	then                                                               \
-	        d="uftps-$$v"                                            ; \
+	        d="qftps-$$v"                                            ; \
 	else                                                               \
-	        d="bdist_uftps-$$v"                                      ; \
+	        d="bdist_qftps-$$v"                                      ; \
 	fi                                                               ; \
 	                                                                   \
 	hg archive -X .hg_archival.txt -X .hgtags -X makebins.sh.in $$d  ; \
@@ -211,7 +211,7 @@ dist bdist:
 
 clean:
 	-rm -f *.o *.obj *.obj64
-	-rm -f uftps uftps.dbg uftps.exe uftps64.exe uftps.dbg.exe uftps.dbg64.exe
+	-rm -f qftps qftps.dbg qftps.exe qftps64.exe qftps.dbg.exe qftps.dbg64.exe
 
 help:
 	@echo 'User targets:'
